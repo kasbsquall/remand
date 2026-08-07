@@ -12,17 +12,62 @@ import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import { RemandLockup } from "~~/components/remand/RemandMark";
 import { ARBISCAN_BASE, REMAND_VERDICT_ADDRESS } from "~~/lib/contract";
 
+/**
+ * Referencia del expediente: año, sección y sufijo de la wallet cuando la hay.
+ * Un acta se identifica por un número, no por el título de su pantalla.
+ */
+export function docketNumber(section: string, address?: string): string {
+  const year = new Date().getUTCFullYear();
+  const tail = address ? address.slice(-4).toUpperCase() : "0000";
+  return `REMAND · ${year} · ${section} · ${tail}`;
+}
+
+function FiledAt({ filed }: { filed?: Date }) {
+  const stamped = filed ?? new Date();
+  const fecha = stamped.toLocaleDateString("es", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: "UTC",
+  });
+  const hora = stamped.toLocaleTimeString("es", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+  });
+  return (
+    <time
+      className="remand-num"
+      dateTime={stamped.toISOString()}
+      style={{
+        display: "block",
+        fontSize: "var(--t-micro)",
+        color: "var(--ink-faint)",
+        marginTop: "var(--ma-hair)",
+      }}
+    >
+      {fecha} · {hora} UTC
+    </time>
+  );
+}
+
 export function Docket({
   reference,
+  filed,
   children,
 }: {
-  /** Referencia del expediente o de la sección, en la esquina superior derecha. */
+  /** Referencia del expediente, en la esquina superior derecha. */
   reference: string;
+  /** Momento de la lectura. Un acta sin fecha no es un acta. */
+  filed?: Date;
   children: React.ReactNode;
 }) {
   return (
     <div className="remand relative min-h-[100dvh]">
       <div className="remand-grain" aria-hidden="true" />
+      <div className="remand-watermark" aria-hidden="true">
+        REMAND
+      </div>
 
       <div className="relative z-[1] mx-auto w-full max-w-5xl px-[var(--ma-block)] pb-[var(--ma-chapter)]">
         <header
@@ -31,13 +76,21 @@ export function Docket({
         >
           <Link
             href="/"
-            className="remand-link inline-flex items-start gap-[var(--ma-close)]"
+            className="remand-link inline-flex items-baseline gap-[var(--ma-close)]"
             style={{ textDecoration: "none" }}
           >
             <RemandLockup markSize={26} wordSize="var(--t-body)" />
-            <span className="remand-label sr-only sm:not-sr-only">Segunda instancia del crédito on-chain</span>
+            <span
+              className="remand-label sr-only sm:not-sr-only"
+              style={{ alignSelf: "flex-end", paddingBottom: "0.15em" }}
+            >
+              Segunda instancia del crédito on-chain
+            </span>
           </Link>
-          <p className="remand-label">{reference}</p>
+          <div style={{ textAlign: "right" }}>
+            <p className="remand-label remand-num">{reference}</p>
+            <FiledAt filed={filed} />
+          </div>
         </header>
 
         <main>{children}</main>

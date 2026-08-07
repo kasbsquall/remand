@@ -12,7 +12,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowClockwise, CheckCircle, Terminal, Warning } from "@phosphor-icons/react";
-import { Docket } from "~~/components/remand/Docket";
+import { Docket, docketNumber } from "~~/components/remand/Docket";
 import { VerdictLedger, type Weights } from "~~/components/remand/VerdictLedger";
 import {
   bps,
@@ -74,6 +74,11 @@ function castCommand(e: EvidenceInput): string {
 
 function VerificadorInterno() {
   const searchParams = useSearchParams();
+
+  // Puntaje que traía el expediente de origen, si se llegó desde uno.
+  const esperadoRaw = searchParams.get("expect");
+  const esperado = esperadoRaw !== null && /^\d+$/.test(esperadoRaw) ? Number(esperadoRaw) : null;
+  const origen = searchParams.get("from");
 
   const [evidence, setEvidence] = useState<EvidenceInput>(() => {
     const initial = { ...DEFAULTS };
@@ -185,6 +190,65 @@ function VerificadorInterno() {
         </form>
       </section>
 
+      {/* Franja de contraste.
+          Es el unico momento del producto donde dos numeros calculados por vias
+          distintas se ponen uno junto a otro. Sin esto, la reproducibilidad se
+          afirma en prosa y no se ve nunca. */}
+      {esperado !== null && (
+        <section className="mt-[var(--ma-section)]" aria-live="polite">
+          <div
+            className="remand-sunk p-[var(--ma-block)]"
+            style={{
+              borderColor:
+                verdict === null ? "var(--rule)" : verdict.totalScore === esperado ? "var(--granted)" : "var(--seal)",
+            }}
+          >
+            <p className="remand-label" style={{ color: "var(--ink)" }}>
+              {origen
+                ? `Reproduciendo el expediente ${origen.slice(0, 8)}…${origen.slice(-6)}`
+                : "Reproduciendo un expediente"}
+            </p>
+
+            <div className="mt-[var(--ma-close)] flex flex-wrap items-end gap-[var(--ma-block)]">
+              <div>
+                <p className="remand-label">Registrado en el expediente</p>
+                <p className="remand-num mt-[var(--ma-hair)]" style={{ fontSize: "var(--t-lead)" }}>
+                  {bps(esperado)}%
+                </p>
+              </div>
+              <div>
+                <p className="remand-label">Devuelto ahora por el contrato</p>
+                <p className="remand-num mt-[var(--ma-hair)]" style={{ fontSize: "var(--t-lead)" }}>
+                  {verdict === null ? "—" : `${bps(verdict.totalScore)}%`}
+                </p>
+              </div>
+              {verdict !== null && (
+                <span
+                  className={`remand-seal ${verdict.totalScore === esperado ? "remand-seal-granted" : "remand-seal-denied"}`}
+                  style={{ "--delay": "0ms" } as React.CSSProperties}
+                >
+                  {verdict.totalScore === esperado ? (
+                    <CheckCircle size={15} weight="light" aria-hidden="true" />
+                  ) : (
+                    <Warning size={15} weight="light" aria-hidden="true" />
+                  )}
+                  {verdict.totalScore === esperado ? "Coincide" : "No coincide"}
+                </span>
+              )}
+            </div>
+
+            <p
+              className="mt-[var(--ma-close)]"
+              style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)", maxWidth: "62ch" }}
+            >
+              {verdict !== null && verdict.totalScore === esperado
+                ? "Este navegador no calculó nada: llamó al contrato en Arbitrum y comparó el resultado con el que traía el expediente."
+                : "La evidencia ya no es la del expediente original, así que el fallo cambia. Es el comportamiento correcto: el motor responde a los datos que recibe."}
+            </p>
+          </div>
+        </section>
+      )}
+
       <section className="mt-[var(--ma-section)]" aria-live="polite" aria-busy={status === "reading"}>
         {status === "error" && (
           <div className="remand-sunk p-[var(--ma-block)]" role="alert">
@@ -288,7 +352,7 @@ function VerificadorInterno() {
 
 export default function Verificador() {
   return (
-    <Docket reference="Verificador">
+    <Docket reference={docketNumber("V")}>
       <Suspense
         fallback={
           <div className="pt-[var(--ma-section)]">

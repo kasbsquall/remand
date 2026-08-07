@@ -37,7 +37,7 @@
   --t-body: 0.9375rem;
   --t-lead: 1.1875rem;
   --t-title: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
-  --t-figure: clamp(3.25rem, 2rem + 5vw, 5.5rem);
+  --t-figure: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem);
 
   /* --- Ma: intervalo variable. Del más pequeño al mayor hay ratio 1:24 --- */
   --ma-hair: 0.25rem;
@@ -45,16 +45,16 @@
   --ma-close: 0.875rem;
   --ma-block: 1.75rem;
   --ma-section: 3.5rem;
-  --ma-chapter: 6rem;
+  --ma-chapter: 9rem;
 
   --radius: 2px;
-  --t-total: clamp(2rem, 1.4rem + 2.2vw, 3.25rem);
+  --t-total: clamp(3.5rem, 2.2rem + 5.2vw, 6rem);
   --sheet-lift: 0 1px 0 oklch(21% 0.014 65 / 0.05);
   --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
 
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-text), Georgia, serif;
+  font-family: var(--font-text), "Charter", "Iowan Old Style", Georgia, serif;
   font-size: var(--t-body);
   line-height: 1.6;
 }
@@ -75,6 +75,8 @@
   --granted-wash: oklch(72% 0.14 155 / 0.12);
   --denied: oklch(68% 0.16 25);
   --denied-wash: oklch(68% 0.16 25 / 0.12);
+  --grain-opacity: 0.09;
+  --grain-blend: screen;
   /* En oscuro, una sombra de tinta clara al 4% no existe: la hoja pierde su
      asiento. Se sustituye por un realce y un contorno propio. */
   --sheet-lift: 0 1px 0 oklch(93% 0.008 85 / 0.06), 0 0 0 1px oklch(9% 0 0 / 0.35);
@@ -87,8 +89,8 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
+  opacity: var(--grain-opacity, 0.05);
+  mix-blend-mode: var(--grain-blend, multiply);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -97,7 +99,8 @@
 /* Titulares. El tracking se cierra mas que en el cuerpo porque a cuerpo grande
    los huecos entre letras crecen y el bloque se desarma. */
 .remand-display {
-  font-family: var(--font-display), system-ui, sans-serif;
+  font-family: var(--font-display), "Archivo", "Helvetica Neue", sans-serif;
+  font-variation-settings: "opsz" 40;
   font-weight: 600;
   line-height: 0.98;
   letter-spacing: -0.032em;
@@ -107,7 +110,7 @@
 /* Logotipo. Tracking aun mas cerrado que un titular: son seis letras que deben
    leerse como una sola pieza junto al isotipo. */
 .remand-wordmark {
-  font-family: var(--font-display), system-ui, sans-serif;
+  font-family: var(--font-display), "Archivo", "Helvetica Neue", sans-serif;
   font-weight: 600;
   letter-spacing: -0.045em;
   font-variation-settings: "opsz" 72;
@@ -160,9 +163,6 @@
   gap: var(--ma-close);
   padding: var(--ma-close) 0;
   border-top: 1px solid var(--rule);
-  transition:
-    background-color 160ms var(--ease-enter),
-    transform 160ms var(--ease-enter);
 }
 
 .remand-row:first-child {
@@ -186,18 +186,53 @@
 
 /* --- Sello del veredicto ------------------------------------------------ */
 
+/* Un sello, no una etiqueta de estado.
+   Doble filete, versalita apretada, inclinacion minima y una entrada que se
+   comporta como un golpe de tampon: entra girado y de mas tamano, rebota y
+   asienta. La opacidad por debajo de 1 imita el papel absorbiendo la tinta. */
 .remand-seal {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--ma-tight);
-  padding: 0.3rem 0.7rem;
-  border-radius: 2px;
+  gap: 0.5rem;
+  padding: 0.55rem 1.05rem;
+  border: 2px solid currentColor;
+  border-radius: var(--radius);
   font-family: var(--font-data), monospace;
   font-size: var(--t-micro);
   text-transform: uppercase;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
   font-weight: 600;
+  opacity: 0.92;
+  transform: rotate(-1.6deg);
+  animation: remand-stamp 240ms var(--ease-enter) both;
+  animation-delay: var(--delay, 300ms);
+}
+
+/* Un sello nunca es una sola linea. */
+.remand-seal::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
   border: 1px solid currentColor;
+  border-radius: 1px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+@keyframes remand-stamp {
+  from {
+    opacity: 0;
+    transform: rotate(-4deg) scale(1.12);
+  }
+  60% {
+    opacity: 0.92;
+    transform: rotate(-1.2deg) scale(0.985);
+  }
+  to {
+    opacity: 0.92;
+    transform: rotate(-1.6deg) scale(1);
+  }
 }
 
 .remand-seal-granted {
@@ -436,6 +471,42 @@
 .remand-ledger-row {
   padding: var(--ma-close) 0;
   border-top: 1px solid var(--rule);
+  /* El resaltado llega hasta el filo del acta en vez de recortarse dentro
+     del texto, como una fila de libro mayor. */
+  margin-inline: calc(var(--ma-close) * -1);
+  padding-inline: var(--ma-close);
+  transition: background-color 140ms var(--ease-enter);
+}
+
+.remand-ledger-row:hover {
+  background: var(--seal-wash);
+}
+
+/* Folio de margen. Dos digitos, siempre presentes, nunca gritando. */
+.remand-folio {
+  flex-shrink: 0;
+  width: 1.8ch;
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
+  font-size: var(--t-micro);
+  color: var(--ink-faint);
+  margin-top: calc((1lh - 1em) / 2);
+}
+
+/* Operador impreso en la pauta. Marca la aritmetica sin tener que explicarla. */
+.remand-op {
+  color: var(--ink-faint);
+  margin-right: 0.35em;
+}
+
+.remand-threshold-note {
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-micro);
+  color: var(--ink-faint);
+  text-align: right;
+  align-self: end;
+  padding-bottom: 0.4em;
 }
 
 .remand-ledger-figures {
@@ -447,10 +518,19 @@
   .remand-ledger-head,
   .remand-ledger-row,
   .remand-ledger-total {
-    grid-template-columns: 2fr 0.62fr 0.52fr 1.1fr;
+    grid-template-columns: 2fr 0.62fr 0.52fr 1.15fr;
     column-gap: var(--ma-block);
     row-gap: var(--ma-tight);
     align-items: start;
+  }
+
+  /* Filete que aisla la columna del resultado. Sin color y sin peso: es la
+     linea que un impresor traza antes de sumar, no un realce de fila. */
+  .remand-ledger-head > span:last-child,
+  .remand-ledger-figure:last-child dd,
+  .remand-ledger-total > p:last-child {
+    border-left: 1px solid var(--rule);
+    padding-left: var(--ma-block);
   }
 
   /* Los tres números dejan de ser un bloque y pasan a ocupar sus columnas. */
@@ -468,5 +548,90 @@
 
   .remand-ledger-figure dd {
     text-align: right;
+  }
+}
+
+/* --- Marca de agua ------------------------------------------------------
+   El papel la lleva antes de que nadie escriba encima. Fija, enorme y casi
+   invisible: es lo que hace que la superficie deje de parecer una pagina web. */
+
+.remand-watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-display), sans-serif;
+  font-weight: 600;
+  font-size: clamp(18rem, 42vw, 42rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: var(--ink);
+  opacity: 0.022;
+  transform: translate(-50%, -50%) rotate(-24deg);
+  white-space: nowrap;
+}
+
+:root[data-theme="dark"] .remand-watermark,
+.remand[data-theme="dark"] .remand-watermark {
+  opacity: 0.035;
+}
+
+/* --- Detalles de acabado ------------------------------------------------ */
+
+.remand ::selection {
+  background: var(--seal-wash);
+  color: var(--ink);
+}
+
+.remand-field {
+  caret-color: var(--seal);
+}
+
+/* --- Impresion ----------------------------------------------------------
+   Un expediente que no se puede imprimir en limpio no es un expediente. */
+
+@media print {
+  .remand {
+    background: #fff;
+    color: #111;
+    font-size: 10.5pt;
+  }
+
+  .remand-grain,
+  .remand-action,
+  form {
+    display: none !important;
+  }
+
+  .remand-watermark {
+    position: absolute;
+    opacity: 0.05;
+  }
+
+  .remand-sheet,
+  .remand-sunk {
+    box-shadow: none;
+    border: 1px solid #bbb;
+    break-inside: avoid;
+  }
+
+  .remand-ledger-row,
+  .remand-row {
+    break-inside: avoid;
+  }
+
+  .remand-enter,
+  .remand-meter-fill,
+  .remand-seal {
+    animation: none !important;
+  }
+
+  /* La URL impresa junto al enlace: en papel, un enlace sin destino no sirve. */
+  .remand-link[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #555;
   }
 }

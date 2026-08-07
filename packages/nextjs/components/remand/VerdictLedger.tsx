@@ -94,17 +94,24 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
           Acta del fallo
         </h2>
         <p className="remand-label remand-label-long">Umbral de aprobación {bps(weights.threshold)}%</p>
-        <p style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)", width: "100%" }}>
-          Aporte = puntaje × peso. La última columna suma el puntaje final.
-        </p>
       </header>
 
       {/* Cabecera de columnas. En móvil desaparece y cada fila se autoexplica. */}
       <div className="remand-label remand-ledger-head hidden md:grid" style={{ paddingBottom: "var(--ma-tight)" }}>
         <span>Dimensión</span>
         <span className="text-right">Puntaje</span>
-        <span className="text-right">Peso</span>
-        <span className="text-right">Aporte al puntaje</span>
+        <span className="text-right">
+          <span className="remand-op" aria-hidden="true">
+            ×
+          </span>
+          Peso
+        </span>
+        <span className="text-right">
+          <span className="remand-op" aria-hidden="true">
+            =
+          </span>
+          Aporte
+        </span>
       </div>
 
       <div style={{ borderTop: "1px solid var(--rule-strong)" }}>
@@ -118,6 +125,9 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
               style={{ "--delay": `${Math.min(index, 7) * 30}ms` } as React.CSSProperties}
             >
               <div className="flex items-start gap-[var(--ma-close)]">
+                <span className="remand-folio" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <Glyph
                   size={16}
                   weight="light"
@@ -190,14 +200,14 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
       </div>
 
       <div
-        className="remand-ledger-total items-baseline py-[var(--ma-close)]"
-        style={{ borderTop: "1px solid var(--rule-strong)" }}
+        className="remand-ledger-total items-baseline py-[var(--ma-block)]"
+        style={{ borderTop: "2px solid var(--rule-strong)" }}
       >
         <p className="remand-label" style={{ color: "var(--ink)" }}>
           Suma de aportes
         </p>
         <span className="hidden md:block" />
-        <span className="hidden md:block" />
+        <span className="remand-threshold-note hidden md:block">umbral {bps(weights.threshold)}%</span>
         <p
           className="remand-num md:text-right"
           style={{

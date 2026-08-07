@@ -13,7 +13,8 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, CheckCircle, Gavel, Scales, SealCheck, ShieldChevron, Warning } from "@phosphor-icons/react";
-import { Docket } from "~~/components/remand/Docket";
+import { Docket, docketNumber } from "~~/components/remand/Docket";
+import { RegisterRuling } from "~~/components/remand/RegisterRuling";
 import { VerdictLedger, type Weights } from "~~/components/remand/VerdictLedger";
 import { ARBISCAN_BASE, bps, REMAND_VERDICT_ADDRESS, type Verdict } from "~~/lib/contract";
 import type { Argument, CaseFile } from "~~/lib/agents";
@@ -24,6 +25,10 @@ type AppealResponse = {
   evidence: Evidence;
   provenance: Record<keyof Evidence, Provenance>;
   truncated: (keyof Evidence)[];
+  rawRepayments: number | null;
+  observedAtBlock: string;
+  caseId: string;
+  alreadyJudged: boolean;
   verdict: Verdict;
   weights: Weights;
   caseFile: CaseFile;
@@ -76,6 +81,14 @@ function EvidenceGrid({ data }: { data: AppealResponse }) {
                 title="La fuente consultada no expone este dato. El contrato lo evalúa como cero."
               >
                 sin datos en la fuente
+              </p>
+            )}
+            {key === "repayments" && data.rawRepayments !== null && data.rawRepayments > data.evidence.repayments && (
+              <p
+                style={{ fontSize: "var(--t-micro)", color: "var(--seal)", lineHeight: 1.35 }}
+                title="Aave emite un evento por cada repago parcial. La dimensión mide qué proporción de la deuda se atendió, no cuántas veces se pagó."
+              >
+                topado a los préstamos · {data.rawRepayments} eventos leídos
               </p>
             )}
             {isTruncated && (
@@ -215,10 +228,13 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
     return () => controller.abort();
   }, [address, reload]);
 
-  const short = `${address.slice(0, 6)}…${address.slice(-4)}`;
+  // Una wallet sin actividad de préstamo merece que se le diga, en vez de
+  // mostrarle cinco medidores en cero como si fueran una medición.
+  const sinHistorial =
+    data !== null && data.evidence.borrows === 0 && data.evidence.repayments === 0 && data.evidence.walletAgeDays === 0;
 
   return (
-    <Docket reference={`Apelación · ${short}`}>
+    <Docket reference={docketNumber("II", address)}>
       {!data && !error && <LoadingDocket />}
 
       {error && (
@@ -262,10 +278,29 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
             >
               {data.address}
             </h1>
+            <p
+              className="remand-num mt-[var(--ma-close)]"
+              style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)" }}
+            >
+              Evidencia observada hasta el bloque {Number(data.observedAtBlock).toLocaleString("es")} de Arbitrum One
+            </p>
+
+            {sinHistorial && (
+              <div className="remand-sunk mt-[var(--ma-block)] p-[var(--ma-block)]">
+                <p className="remand-label" style={{ color: "var(--ink)" }}>
+                  Expediente sin materia
+                </p>
+                <p className="remand-prose mt-[var(--ma-tight)]">
+                  Esta wallet no registra actividad de préstamo en Arbitrum One, así que no hay evidencia crediticia que
+                  apelar. El fallo se emite igual, con las dimensiones en cero, porque el contrato no distingue entre un
+                  historial limpio y la ausencia de historial.
+                </p>
+              </div>
+            )}
           </section>
 
           <section
-            className="remand-enter mt-[var(--ma-section)]"
+            className="remand-enter mt-[var(--ma-block)]"
             style={{ "--delay": "60ms" } as React.CSSProperties}
             aria-labelledby="evidencia-heading"
           >
@@ -321,7 +356,7 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
           </section>
 
           <section
-            className="remand-enter mt-[var(--ma-section)]"
+            className="remand-enter mt-[var(--ma-chapter)]"
             style={{ "--delay": "180ms" } as React.CSSProperties}
           >
             <div className="remand-sheet" style={{ padding: "var(--ma-section) var(--ma-block)" }}>
@@ -343,7 +378,7 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
                     ) : (
                       <Warning size={15} weight="light" aria-hidden="true" />
                     )}
-                    {data.verdict.approved ? "Apelación concedida" : "Apelación denegada"}
+                    {data.verdict.approved ? "Concedida" : "Denegada"}
                   </span>
                   <div>
                     <p className="remand-label">Colateral exigido tras el recálculo</p>
@@ -365,7 +400,25 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
 
           <section
             className="remand-enter mt-[var(--ma-section)]"
-            style={{ "--delay": "240ms" } as React.CSSProperties}
+            style={{ "--delay": "220ms" } as React.CSSProperties}
+            aria-labelledby="asentar-heading"
+          >
+            <h2 id="asentar-heading" className="remand-label">
+              Registro del fallo
+            </h2>
+            <div className="mt-[var(--ma-close)]">
+              <RegisterRuling
+                appellant={data.address}
+                caseId={BigInt(data.caseId)}
+                evidence={data.evidence}
+                alreadyJudged={data.alreadyJudged}
+              />
+            </div>
+          </section>
+
+          <section
+            className="remand-enter mt-[var(--ma-section)]"
+            style={{ "--delay": "260ms" } as React.CSSProperties}
             aria-labelledby="verificar-heading"
           >
             <h2 id="verificar-heading" className="remand-label">
@@ -378,7 +431,7 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
             </p>
             <div className="mt-[var(--ma-block)] flex flex-wrap gap-[var(--ma-close)]">
               <Link
-                href={`/verify?age=${data.evidence.walletAgeDays}&active=${data.evidence.activeMonths}&total=${data.evidence.totalMonths}&repaid=${data.evidence.repayments}&borrowed=${data.evidence.borrows}&liq=${data.evidence.liquidations}&protocols=${data.evidence.distinctProtocols}`}
+                href={`/verify?age=${data.evidence.walletAgeDays}&active=${data.evidence.activeMonths}&total=${data.evidence.totalMonths}&repaid=${data.evidence.repayments}&borrowed=${data.evidence.borrows}&liq=${data.evidence.liquidations}&protocols=${data.evidence.distinctProtocols}&expect=${data.verdict.totalScore}&from=${data.address}`}
                 className="remand-action"
               >
                 <SealCheck size={16} weight="light" aria-hidden="true" />

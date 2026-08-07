@@ -8,8 +8,8 @@
  * cosa. Todo número que la interfaz presenta como fallo sale de Arbitrum.
  */
 
-import { createPublicClient, http } from "viem";
-import { arbitrumSepolia } from "viem/chains";
+import { createPublicClient, encodePacked, http, keccak256 } from "viem";
+import { arbitrum, arbitrumSepolia } from "viem/chains";
 
 export const REMAND_VERDICT_ADDRESS = "0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a" as const;
 
@@ -70,6 +70,13 @@ export const remandAbi = [
       { type: "uint32" },
       { type: "uint32" },
     ],
+  },
+  {
+    type: "function",
+    name: "isJudged",
+    stateMutability: "view",
+    inputs: [{ name: "case_id", type: "uint256" }],
+    outputs: [{ type: "bool" }],
   },
   {
     type: "function",
@@ -192,6 +199,57 @@ export async function readWeights() {
     diversity: w[4],
     threshold: w[5],
   };
+}
+
+/**
+ * Cliente de Arbitrum One.
+ *
+ * La evidencia sale de la red real, así que el bloque de corte tiene que leerse
+ * de ahí. Sin ese corte, "reproducible" lleva un asterisco: la evidencia de ayer
+ * ya no existe y nadie podría rehacer el fallo de ayer.
+ */
+export const arbitrumOneClient = createPublicClient({
+  chain: arbitrum,
+  transport: http("https://arb1.arbitrum.io/rpc"),
+});
+
+/**
+ * Número de expediente, derivado de la wallet y del bloque de corte.
+ *
+ * Es determinista a propósito: el mismo apelante evaluado hasta el mismo bloque
+ * produce siempre el mismo expediente, así que dos personas que abran el caso
+ * llegan al mismo número sin coordinarse. Y como el bloque avanza, una apelación
+ * posterior con más historial es un expediente distinto en vez de un intento de
+ * sobrescribir el anterior, que el contrato rechazaría.
+ */
+export function caseIdFor(address: string, observedAtBlock: bigint): bigint {
+  const packed = encodePacked(["address", "uint64"], [address as `0x${string}`, observedAtBlock]);
+  return BigInt(keccak256(packed));
+}
+
+/** Referencia legible del expediente. El número completo es de 77 dígitos. */
+export function caseRef(caseId: bigint): string {
+  const hex = caseId.toString(16).padStart(64, "0");
+  return `${hex.slice(0, 4)}-${hex.slice(-4)}`.toUpperCase();
+}
+
+/** Si un expediente ya tiene fallo asentado en la cadena. */
+export async function isJudged(caseId: bigint): Promise<boolean> {
+  return (await sepoliaClient.readContract({
+    address: REMAND_VERDICT_ADDRESS,
+    abi: remandAbi,
+    functionName: "isJudged",
+    args: [caseId],
+  })) as boolean;
+}
+
+/** Cantidad de apelaciones falladas hasta ahora. */
+export async function totalAppeals(): Promise<bigint> {
+  return (await sepoliaClient.readContract({
+    address: REMAND_VERDICT_ADDRESS,
+    abi: remandAbi,
+    functionName: "totalAppeals",
+  })) as bigint;
 }
 
 /** Formatea puntos base como porcentaje con dos decimales. */

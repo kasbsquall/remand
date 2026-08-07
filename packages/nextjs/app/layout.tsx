@@ -1,4 +1,4 @@
-import { Bricolage_Grotesque, IBM_Plex_Mono, Newsreader, Orbitron } from "next/font/google";
+import { Bricolage_Grotesque, IBM_Plex_Mono, Newsreader } from "next/font/google";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Metadata } from "next";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
@@ -12,6 +12,9 @@ import "~~/styles/remand.css";
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   variable: "--font-display",
+  // Sin declarar el eje, next/font sirve solo el de peso y el tamano optico no
+  // ocurre, que era justamente el argumento para elegir esta familia.
+  axes: ["opsz"],
   display: "swap",
 });
 
@@ -21,6 +24,7 @@ const bricolage = Bricolage_Grotesque({
 const newsreader = Newsreader({
   subsets: ["latin"],
   variable: "--font-text",
+  axes: ["opsz"],
   display: "swap",
 });
 
@@ -30,12 +34,6 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-data",
   weight: ["400", "500", "600"],
   display: "swap",
-});
-
-const orbitron = Orbitron({
-  subsets: ["latin"],
-  variable: "--font-orbitron",
-  weight: ["400", "700", "900"],
 });
 
 const baseUrl = process.env.VERCEL_URL
@@ -85,7 +83,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
       <body
-        className={`${bricolage.variable} ${newsreader.variable} ${plexMono.variable} ${orbitron.variable} font-sans`}
+        className={`${bricolage.variable} ${newsreader.variable} ${plexMono.variable} font-sans`}
         suppressHydrationWarning
       >
         <ThemeProvider>

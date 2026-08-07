@@ -13,7 +13,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Prohibit, Warning } from "@phosphor-icons/react";
 import { isAddress } from "viem";
-import { Docket } from "~~/components/remand/Docket";
+import { Docket, docketNumber } from "~~/components/remand/Docket";
 
 /** Wallet de un prestatario real de Aave V3 en Arbitrum, para probar la demo. */
 const EJEMPLO = "0x39c7e5be19f99b178e38aa06f7799d517be89e92";
@@ -36,7 +36,7 @@ export default function PrimeraInstancia() {
   };
 
   return (
-    <Docket reference="Primera instancia">
+    <Docket reference={docketNumber("I")}>
       <section className="pt-[var(--ma-section)]">
         <p className="remand-label remand-enter">El problema</p>
 
@@ -176,7 +176,8 @@ export default function PrimeraInstancia() {
               className="mt-[var(--ma-tight)]"
               style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)" }}
             >
-              Se lee el historial público de la wallet en Arbitrum One. No se pide firma ni conexión.{" "}
+              Reunir la evidencia y calcular el fallo no exige firma: se lee historial público. Asentarlo en la cadena
+              sí, y sólo puede hacerlo el dueño de la wallet.{" "}
               <button
                 type="button"
                 className="remand-link"

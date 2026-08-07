@@ -10,7 +10,7 @@
 import { NextResponse } from "next/server";
 import { isAddress } from "viem";
 import { buildCaseFile } from "~~/lib/agents";
-import { previewVerdict, readWeights } from "~~/lib/contract";
+import { arbitrumOneClient, caseIdFor, isJudged, previewVerdict, readWeights } from "~~/lib/contract";
 import { collectEvidenceFromIndexer } from "~~/lib/evidence/indexer";
 
 export const runtime = "nodejs";
@@ -35,15 +35,21 @@ export async function POST(request: Request) {
   }
 
   try {
-    const collected = await collectEvidenceFromIndexer(address, indexerKey);
+    // El bloque de corte se fija antes de leer nada. Es lo que convierte al
+    // expediente en un documento con fecha: sin él, la misma consulta mañana
+    // evalúa otra evidencia y el fallo de hoy no se podría reproducir.
+    const observedAtBlock = await arbitrumOneClient.getBlockNumber();
+    const collected = await collectEvidenceFromIndexer(address, indexerKey, observedAtBlock);
+    const caseId = caseIdFor(address, observedAtBlock);
 
     // El fallo y los argumentos se piden a la vez: no dependen entre sí. El
     // veredicto sale del contrato aunque los agentes fallen, que es
     // exactamente la separación que el proyecto defiende.
-    const [verdict, weights, caseFile] = await Promise.all([
+    const [verdict, weights, caseFile, alreadyJudged] = await Promise.all([
       previewVerdict(collected.evidence),
       readWeights(),
       buildCaseFile(collected, process.env.ANTHROPIC_API_KEY),
+      isJudged(caseId),
     ]);
 
     return NextResponse.json({
@@ -51,6 +57,10 @@ export async function POST(request: Request) {
       evidence: collected.evidence,
       provenance: collected.provenance,
       truncated: collected.truncated,
+      rawRepayments: collected.rawRepayments ?? null,
+      observedAtBlock: observedAtBlock.toString(),
+      caseId: caseId.toString(),
+      alreadyJudged,
       verdict,
       weights,
       caseFile,

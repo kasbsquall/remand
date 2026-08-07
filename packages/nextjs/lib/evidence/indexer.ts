@@ -159,6 +159,7 @@ async function countLendingEvents(
   address: Address,
   event: (typeof LENDING_EVENTS)[keyof typeof LENDING_EVENTS],
   apiKey: string,
+  toBlock: bigint,
 ): Promise<{ count: number; truncated: boolean }> {
   let count = 0;
   for (let page = 1; page <= MAX_PAGES; page++) {
@@ -169,7 +170,7 @@ async function countLendingEvents(
         action: "getLogs",
         address: AAVE_V3_POOL,
         fromBlock: "0",
-        toBlock: "latest",
+        toBlock: toBlock.toString(),
         topic0: event.topic0,
         [event.borrowerTopic]: addressAsTopic(address),
         [`topic0_${event.borrowerTopic.replace("topic", "")}_opr`]: "and",
@@ -190,14 +191,23 @@ async function countLendingEvents(
  * @param address wallet apelante
  * @param apiKey clave de la API v2 de Etherscan
  */
-export async function collectEvidenceFromIndexer(address: Address, apiKey: string): Promise<CollectedEvidence> {
+export async function collectEvidenceFromIndexer(
+  address: Address,
+  apiKey: string,
+  /**
+   * Bloque hasta el que se lee. Fijarlo es lo que hace reproducible el
+   * expediente: sin corte, la misma URL abierta manana evalua otra evidencia y
+   * puede dar otro fallo.
+   */
+  observedAtBlock: bigint,
+): Promise<CollectedEvidence> {
   const transactions = await query<EtherscanTx[]>(
     {
       module: "account",
       action: "txlist",
       address,
       startblock: "0",
-      endblock: "latest",
+      endblock: observedAtBlock.toString(),
       sort: "asc",
     },
     apiKey,
@@ -230,7 +240,7 @@ export async function collectEvidenceFromIndexer(address: Address, apiKey: strin
         distinctProtocols: 0,
       },
       provenance,
-      observedAtBlock: 0n,
+      observedAtBlock,
       firstActivityBlock: null,
       rpcCalls: 1,
       truncated: [],
@@ -261,11 +271,11 @@ export async function collectEvidenceFromIndexer(address: Address, apiKey: strin
   // limite y devuelve un error que se leeria como "sin eventos", falseando el
   // expediente a la baja.
   await sleep(RATE_LIMIT_SPACING_MS);
-  const borrows = await countLendingEvents(address, LENDING_EVENTS.borrow, apiKey);
+  const borrows = await countLendingEvents(address, LENDING_EVENTS.borrow, apiKey, observedAtBlock);
   await sleep(RATE_LIMIT_SPACING_MS);
-  const repayments = await countLendingEvents(address, LENDING_EVENTS.repay, apiKey);
+  const repayments = await countLendingEvents(address, LENDING_EVENTS.repay, apiKey, observedAtBlock);
   await sleep(RATE_LIMIT_SPACING_MS);
-  const liquidations = await countLendingEvents(address, LENDING_EVENTS.liquidation, apiKey);
+  const liquidations = await countLendingEvents(address, LENDING_EVENTS.liquidation, apiKey, observedAtBlock);
 
   const truncated: (keyof Evidence)[] = [];
   if (borrows.truncated) truncated.push("borrows");
@@ -288,9 +298,10 @@ export async function collectEvidenceFromIndexer(address: Address, apiKey: strin
       distinctProtocols: protocols.size,
     },
     provenance,
-    observedAtBlock: 0n,
+    observedAtBlock,
     firstActivityBlock: null,
     rpcCalls: 4,
+    rawRepayments: repayments.count,
     truncated,
   };
 }

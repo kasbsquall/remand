@@ -48,6 +48,16 @@ export type CollectedEvidence = {
    * exacta. Si una dimension figura aqui, la interfaz debe decirlo junto al dato.
    */
   truncated: (keyof Evidence)[];
+  /**
+   * Repagos leídos antes de topar al número de préstamos.
+   *
+   * Aave emite un evento por repago parcial, así que el bruto puede superar con
+   * mucho a los préstamos. La dimensión mide qué proporción de la deuda se
+   * atendió, no cuántas veces se pagó, y por eso se topa. Publicar el bruto
+   * junto al usado convierte un ajuste que parecería sospechoso en una decisión
+   * defendida.
+   */
+  rawRepayments?: number;
 };
 
 const SECONDS_PER_DAY = 86_400;
