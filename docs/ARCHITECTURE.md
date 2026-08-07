@@ -15,24 +15,24 @@ contrato, no el servidor y no los agentes**. Todo lo demás se acomoda a eso.
 ```mermaid
 flowchart TB
     subgraph nav["Navegador del visitante"]
-        UI["Interfaz de Remand<br/><i>Next.js · tres vistas</i>"]
+        UI["Interfaz de Remand<br>Next.js · tres vistas"]
         VER["Verificador público"]
     end
 
     subgraph vps["VPS propio · LiteSpeed + Docker"]
-        API["Ruta de API del expediente<br/><i>server-side</i>"]
+        API["Ruta de API del expediente<br>server-side"]
         COL["Recolector de evidencia"]
         AG["Agentes: Defensor y Contraparte"]
     end
 
     subgraph ext["Fuentes externas"]
-        IDX["Etherscan v2<br/><i>historial y eventos</i>"]
-        LLM["Claude<br/><i>redacta los alegatos</i>"]
+        IDX["Etherscan v2<br>historial y eventos"]
+        LLM["Claude<br>redacta los alegatos"]
     end
 
     subgraph arb["Arbitrum"]
-        SEP["RemandVerdict<br/><i>Rust → WASM · Stylus</i><br/>Arbitrum Sepolia"]
-        ONE["Arbitrum One<br/><i>historial real · pool de Aave V3</i>"]
+        SEP["RemandVerdict<br>Rust → WASM · Stylus<br>Arbitrum Sepolia"]
+        ONE["Arbitrum One<br>historial real · pool de Aave V3"]
     end
 
     UI -->|"dirección a apelar"| API
@@ -41,7 +41,7 @@ flowchart TB
     IDX -.->|"lee de"| ONE
     COL -->|"evidencia estructurada"| AG
     AG <-->|"argumentos"| LLM
-    API -->|"previewVerdict<br/><b>el fallo se calcula aquí</b>"| SEP
+    API -->|"previewVerdict<br><b>el fallo se calcula aquí</b>"| SEP
     SEP -->|"desglose de 5 dimensiones"| API
     API -->|"expediente completo"| UI
 
@@ -101,7 +101,7 @@ base por no haber sido liquidada nunca.
 ```mermaid
 flowchart LR
     W["Wallet apelante"] --> Q1["Historial de transacciones"]
-    W --> Q2["Eventos del pool<br/>de Aave V3"]
+    W --> Q2["Eventos del pool<br>de Aave V3"]
 
     Q1 --> D1["Antigüedad"]
     Q1 --> D2["Meses activos"]
@@ -110,7 +110,7 @@ flowchart LR
     Q2 --> D5["Repagos"]
     Q2 --> D6["Liquidaciones"]
 
-    D1 & D2 & D3 & D4 & D5 & D6 --> E["Evidencia<br/><i>con su procedencia</i>"]
+    D1 & D2 & D3 & D4 & D5 & D6 --> E["Evidencia<br>con su procedencia"]
     E --> C["Contrato Stylus"]
 
     classDef src fill:#2a2620,stroke:#6b5f4d,color:#f0ebe4
@@ -137,8 +137,8 @@ estimado rompería la promesa de que el fallo es reproducible.
 ```mermaid
 flowchart TB
     E["Evidencia recolectada"]
-    E --> DEF["Agente Defensor<br/><i>construye el caso</i>"]
-    E --> CON["Agente Contraparte<br/><i>audita el expediente</i>"]
+    E --> DEF["Agente Defensor<br>construye el caso"]
+    E --> CON["Agente Contraparte<br>audita el expediente"]
 
     DEF --> EXP["Alegatos del expediente"]
     CON --> EXP
@@ -187,7 +187,7 @@ sequenceDiagram
     UI->>S: abre expediente
     S->>I: historial y eventos de préstamo
     I-->>S: transacciones y logs
-    Note over S: reduce a 7 magnitudes<br/>con su procedencia
+    Note over S: reduce a 7 magnitudes<br>con su procedencia
     par Alegatos
         S->>A: evidencia
         A-->>S: defensa y objeciones
@@ -198,7 +198,7 @@ sequenceDiagram
     S-->>UI: expediente completo
     UI-->>U: evidencia, alegatos y fallo
 
-    Note over U,C: Cualquiera reproduce el fallo<br/>sin wallet, sin gas y sin permisos
+    Note over U,C: Cualquiera reproduce el fallo<br>sin wallet, sin gas y sin permisos
     U->>C: previewVerdict(misma evidencia)
     C-->>U: exactamente los mismos números
 ```
@@ -234,8 +234,8 @@ protocolos que critica.
 
 ```mermaid
 flowchart LR
-    N["Visitante"] -->|HTTPS 443| LS["LiteSpeed<br/><i>reverse proxy</i>"]
-    LS -->|"127.0.0.1:8320"| D["Contenedor Docker<br/><i>Next.js · usuario sin privilegios</i>"]
+    N["Visitante"] -->|HTTPS 443| LS["LiteSpeed<br>reverse proxy"]
+    LS -->|"127.0.0.1:8320"| D["Contenedor Docker<br>Next.js · usuario sin privilegios"]
     D -->|RPC| ARB["Arbitrum Sepolia"]
     N ==>|"RPC directo"| ARB
 
