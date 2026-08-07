@@ -46,7 +46,7 @@ function buildRows(verdict: Verdict, weights: Weights): Row[] {
     {
       key: "consistency",
       label: "Consistencia de actividad",
-      meaning: "Meses con actividad sobre meses de vida",
+      meaning: "Meses con actividad sobre meses desde el inicio",
       score: verdict.scoreConsistency,
       weight: weights.consistency,
       IconGlyph: ArrowsClockwise,
@@ -54,7 +54,7 @@ function buildRows(verdict: Verdict, weights: Weights): Row[] {
     {
       key: "age",
       label: "Antigüedad de la wallet",
-      meaning: "Tiempo operando, satura a los dos años",
+      meaning: "Tiempo operando. A partir de dos años ya no suma más",
       score: verdict.scoreAge,
       weight: weights.age,
       IconGlyph: Calendar,
@@ -62,15 +62,15 @@ function buildRows(verdict: Verdict, weights: Weights): Row[] {
     {
       key: "liquidation",
       label: "Ausencia de liquidaciones",
-      meaning: "Cae a cero con tres liquidaciones",
+      meaning: "Con tres liquidaciones esta dimensión aporta cero",
       score: verdict.scoreLiquidation,
       weight: weights.liquidation,
       IconGlyph: ShieldWarning,
     },
     {
       key: "diversity",
-      label: "Diversidad de protocolos",
-      meaning: "Contratos distintos usados, satura en ocho",
+      label: "Diversidad de contratos",
+      meaning: "Contratos distintos con los que operó. A partir de ocho ya no suma más",
       score: verdict.scoreDiversity,
       weight: weights.diversity,
       IconGlyph: StackSimple,
@@ -93,8 +93,9 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
         <h2 id="acta-heading" className="remand-label">
           Acta del fallo
         </h2>
-        <p className="remand-label" style={{ letterSpacing: "0.08em" }}>
-          Umbral de aprobación {bps(weights.threshold)}%
+        <p className="remand-label remand-label-long">Umbral de aprobación {bps(weights.threshold)}%</p>
+        <p style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)", width: "100%" }}>
+          Aporte = puntaje × peso. La última columna suma el puntaje final.
         </p>
       </header>
 
@@ -103,7 +104,7 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
         <span>Dimensión</span>
         <span className="text-right">Puntaje</span>
         <span className="text-right">Peso</span>
-        <span className="text-right">Aporte, en puntos</span>
+        <span className="text-right">Aporte al puntaje</span>
       </div>
 
       <div style={{ borderTop: "1px solid var(--rule-strong)" }}>
@@ -118,10 +119,11 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
             >
               <div className="flex items-start gap-[var(--ma-close)]">
                 <Glyph
-                  size={18}
+                  size={16}
                   weight="light"
                   aria-hidden="true"
-                  style={{ color: "var(--ink-faint)", marginTop: "0.15rem", flexShrink: 0 }}
+                  className="remand-glyph-inline"
+                  style={{ color: "var(--ink-faint)" }}
                 />
                 <div>
                   <p style={{ lineHeight: 1.35 }}>{row.label}</p>
@@ -168,9 +170,17 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
                   </dd>
                 </div>
                 <div className="remand-ledger-figure">
-                  <dt className="remand-label">Aporte</dt>
-                  <dd className="remand-num" style={{ fontSize: "var(--t-small)", fontWeight: 600 }}>
-                    {bps(aporte)}
+                  <dt className="remand-label">Aporte al puntaje</dt>
+                  <dd
+                    className="remand-num"
+                    style={{
+                      fontSize: "var(--t-lead)",
+                      fontWeight: 500,
+                      lineHeight: 1.15,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {bps(aporte)}%
                   </dd>
                 </div>
               </dl>
@@ -188,7 +198,15 @@ export function VerdictLedger({ verdict, weights }: { verdict: Verdict; weights:
         </p>
         <span className="hidden md:block" />
         <span className="hidden md:block" />
-        <p className="remand-num md:text-right" style={{ fontSize: "var(--t-lead)", fontWeight: 600 }}>
+        <p
+          className="remand-num md:text-right"
+          style={{
+            fontSize: "var(--t-total)",
+            fontWeight: 500,
+            lineHeight: 0.9,
+            letterSpacing: "-0.03em",
+          }}
+        >
           {bps(sum)}%
         </p>
       </div>

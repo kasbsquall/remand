@@ -48,7 +48,7 @@ export function Docket({
         style={{ borderTop: "1px solid var(--rule)" }}
       >
         <div className="flex flex-wrap items-baseline justify-between gap-[var(--ma-close)] pt-[var(--ma-close)]">
-          <p className="remand-label">Contrato Stylus · Arbitrum Sepolia</p>
+          <p className="remand-label">Contrato del veredicto · Arbitrum Sepolia, red de pruebas</p>
           <a
             href={`${ARBISCAN_BASE}/address/${REMAND_VERDICT_ADDRESS}`}
             target="_blank"
@@ -57,7 +57,8 @@ export function Docket({
             style={{ fontSize: "var(--t-small)" }}
           >
             {REMAND_VERDICT_ADDRESS}
-            <ArrowUpRight size={13} weight="light" aria-hidden="true" />
+            <ArrowUpRight size={16} weight="light" aria-hidden="true" />
+            <span className="sr-only">(se abre en una pestaña nueva)</span>
           </a>
         </div>
       </footer>

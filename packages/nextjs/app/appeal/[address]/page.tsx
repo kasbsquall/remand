@@ -15,7 +15,7 @@ import Link from "next/link";
 import { ArrowUpRight, CheckCircle, Gavel, Scales, SealCheck, ShieldChevron, Warning } from "@phosphor-icons/react";
 import { Docket } from "~~/components/remand/Docket";
 import { VerdictLedger, type Weights } from "~~/components/remand/VerdictLedger";
-import { bps, type Verdict } from "~~/lib/contract";
+import { ARBISCAN_BASE, bps, REMAND_VERDICT_ADDRESS, type Verdict } from "~~/lib/contract";
 import type { Argument, CaseFile } from "~~/lib/agents";
 import type { Evidence, Provenance } from "~~/lib/evidence/collector";
 
@@ -70,8 +70,22 @@ function EvidenceGrid({ data }: { data: AppealResponse }) {
                 </span>
               )}
             </p>
-            {unavailable && <p style={{ fontSize: "var(--t-micro)", color: "var(--seal)" }}>no medible</p>}
-            {isTruncated && <p style={{ fontSize: "var(--t-micro)", color: "var(--seal)" }}>mínimo, conteo truncado</p>}
+            {unavailable && (
+              <p
+                style={{ fontSize: "var(--t-micro)", color: "var(--seal)" }}
+                title="La fuente consultada no expone este dato. El contrato lo evalúa como cero."
+              >
+                sin datos en la fuente
+              </p>
+            )}
+            {isTruncated && (
+              <p
+                style={{ fontSize: "var(--t-micro)", color: "var(--seal)" }}
+                title="La fuente devuelve un máximo de resultados. El total real puede ser mayor."
+              >
+                al menos esta cifra
+              </p>
+            )}
           </div>
         );
       })}
@@ -129,7 +143,11 @@ function ArgumentList({
               className="remand-row"
               style={{ gridTemplateColumns: "auto 1fr", alignItems: "start" }}
             >
-              <span className="remand-num" style={{ fontSize: "var(--t-micro)", color: "var(--ink-faint)" }}>
+              <span
+                className="remand-num"
+                aria-hidden="true"
+                style={{ fontSize: "var(--t-micro)", color: "var(--ink-faint)" }}
+              >
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>
@@ -170,6 +188,8 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
   const { address } = use(params);
   const [data, setData] = useState<AppealResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Cambiarlo relanza la lectura sin recargar la pagina.
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -193,7 +213,7 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
       });
 
     return () => controller.abort();
-  }, [address]);
+  }, [address, reload]);
 
   const short = `${address.slice(0, 6)}…${address.slice(-4)}`;
 
@@ -209,10 +229,24 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
               <p className="remand-label" style={{ color: "var(--ink)" }}>
                 No se pudo abrir el expediente
               </p>
-              <p className="remand-prose mt-[var(--ma-tight)]">{error}</p>
-              <Link href="/" className="remand-action remand-action-quiet mt-[var(--ma-block)]">
-                Volver a primera instancia
-              </Link>
+              <p className="remand-prose mt-[var(--ma-tight)]">
+                No se pudo reunir el historial de esta wallet en Arbitrum. Puede ser una caída temporal de la fuente de
+                datos. Vuelve a intentarlo en un minuto o prueba con otra dirección.
+              </p>
+              <p
+                className="remand-num mt-[var(--ma-tight)]"
+                style={{ fontSize: "var(--t-micro)", color: "var(--ink-faint)" }}
+              >
+                {error}
+              </p>
+              <div className="mt-[var(--ma-block)] flex flex-wrap gap-[var(--ma-close)]">
+                <button type="button" className="remand-action" onClick={() => setReload(n => n + 1)}>
+                  Reintentar
+                </button>
+                <Link href="/" className="remand-action remand-action-quiet">
+                  Volver a primera instancia
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -220,7 +254,7 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
 
       {data && (
         <>
-          <section className="pt-[var(--ma-section)]">
+          <section className="remand-enter pt-[var(--ma-section)]" style={{ "--delay": "0ms" } as React.CSSProperties}>
             <p className="remand-label">Apelante</p>
             <h1
               className="remand-num mt-[var(--ma-tight)]"
@@ -230,7 +264,11 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
             </h1>
           </section>
 
-          <section className="mt-[var(--ma-section)]" aria-labelledby="evidencia-heading">
+          <section
+            className="remand-enter mt-[var(--ma-section)]"
+            style={{ "--delay": "60ms" } as React.CSSProperties}
+            aria-labelledby="evidencia-heading"
+          >
             <h2 id="evidencia-heading" className="remand-label">
               Evidencia reunida en Arbitrum One
             </h2>
@@ -239,15 +277,19 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
             </div>
           </section>
 
-          <section className="mt-[var(--ma-section)]" aria-labelledby="agentes-heading">
+          <section
+            className="remand-enter mt-[var(--ma-section)]"
+            style={{ "--delay": "120ms" } as React.CSSProperties}
+            aria-labelledby="agentes-heading"
+          >
             <div className="flex flex-wrap items-baseline justify-between gap-[var(--ma-close)]">
               <h2 id="agentes-heading" className="remand-label">
                 Alegatos
               </h2>
-              <p className="remand-label" style={{ letterSpacing: "0.08em" }}>
+              <p className="remand-label remand-label-long">
                 {data.caseFile.source === "model"
-                  ? "Redactados por agentes"
-                  : `Análisis determinista · ${data.caseFile.fallbackReason ?? "sin modelo"}`}
+                  ? "Redactados por los dos agentes · no afectan el puntaje"
+                  : `Redactados sin agentes · ${data.caseFile.fallbackReason ?? "los agentes no estuvieron disponibles"}`}
               </p>
             </div>
 
@@ -272,17 +314,20 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
               className="mt-[var(--ma-close)] flex items-start gap-[var(--ma-tight)]"
               style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)", maxWidth: "70ch" }}
             >
-              <Gavel size={16} weight="light" aria-hidden="true" style={{ marginTop: "0.15rem", flexShrink: 0 }} />
-              Ningún agente decide. Los alegatos no alteran el fallo ni en un punto base: el veredicto lo computa el
-              contrato a partir de la evidencia de arriba.
+              <Gavel size={16} weight="light" aria-hidden="true" className="remand-glyph-inline" />
+              Ningún agente decide. Los alegatos explican el expediente y no mueven el puntaje ni una centésima: el
+              fallo lo computa el contrato con la evidencia de arriba.
             </p>
           </section>
 
-          <section className="mt-[var(--ma-section)]">
-            <div className="remand-sheet p-[var(--ma-block)]">
+          <section
+            className="remand-enter mt-[var(--ma-section)]"
+            style={{ "--delay": "180ms" } as React.CSSProperties}
+          >
+            <div className="remand-sheet" style={{ padding: "var(--ma-section) var(--ma-block)" }}>
               <div className="flex flex-wrap items-end justify-between gap-[var(--ma-block)]">
                 <div>
-                  <p className="remand-label">Puntaje recalculado</p>
+                  <p className="remand-label">Puntaje del fallo</p>
                   <p className="remand-figure mt-[var(--ma-tight)]">
                     {bps(data.verdict.totalScore)}
                     <span style={{ fontSize: "0.28em", marginLeft: "0.08em" }}>%</span>
@@ -312,20 +357,24 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
                 </div>
               </div>
 
-              <hr className="remand-rule my-[var(--ma-block)]" />
+              <hr className="remand-rule" style={{ margin: "var(--ma-section) 0 var(--ma-block)" }} />
 
               <VerdictLedger verdict={data.verdict} weights={data.weights} />
             </div>
           </section>
 
-          <section className="mt-[var(--ma-section)]" aria-labelledby="verificar-heading">
+          <section
+            className="remand-enter mt-[var(--ma-section)]"
+            style={{ "--delay": "240ms" } as React.CSSProperties}
+            aria-labelledby="verificar-heading"
+          >
             <h2 id="verificar-heading" className="remand-label">
               Comprobarlo por cuenta propia
             </h2>
             <p className="remand-prose mt-[var(--ma-close)]">
-              Este fallo se calculó dentro del contrato en Arbitrum, no en este servidor. La misma función es una vista
-              pública: cualquiera puede ejecutarla con esta evidencia, sin wallet y sin gas, y obtener estos mismos
-              números.
+              El fallo lo calcula un contrato desplegado en Arbitrum Sepolia, la red de pruebas de Arbitrum, y no este
+              servidor. La evidencia sí sale de Arbitrum One, la red real. Cualquiera puede ejecutar la misma función
+              pública con estos datos, sin wallet y sin gas, y obtener estos mismos números.
             </p>
             <div className="mt-[var(--ma-block)] flex flex-wrap gap-[var(--ma-close)]">
               <Link
@@ -336,13 +385,14 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
                 Abrir el verificador
               </Link>
               <a
-                href={`https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a#readContract`}
+                href={`${ARBISCAN_BASE}/address/${REMAND_VERDICT_ADDRESS}#readContract`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="remand-action remand-action-quiet"
               >
-                Leer el contrato en Arbiscan
-                <ArrowUpRight size={15} weight="light" aria-hidden="true" />
+                Leer el contrato que emitió este fallo
+                <ArrowUpRight size={16} weight="light" aria-hidden="true" />
+                <span className="sr-only">(se abre en una pestaña nueva)</span>
               </a>
             </div>
           </section>

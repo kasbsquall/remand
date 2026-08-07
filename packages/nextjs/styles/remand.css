@@ -17,7 +17,7 @@
   --paper-raised: oklch(98.8% 0.004 85);
   --ink: oklch(21% 0.014 65);
   --ink-soft: oklch(43% 0.012 65);
-  --ink-faint: oklch(60% 0.01 65);
+  --ink-faint: oklch(52% 0.011 65);
   --rule: oklch(21% 0.014 65 / 0.11);
   --rule-strong: oklch(21% 0.014 65 / 0.22);
 
@@ -47,6 +47,9 @@
   --ma-section: 3.5rem;
   --ma-chapter: 6rem;
 
+  --radius: 2px;
+  --t-total: clamp(2rem, 1.4rem + 2.2vw, 3.25rem);
+  --sheet-lift: 0 1px 0 oklch(21% 0.014 65 / 0.05);
   --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
 
   background: var(--paper);
@@ -63,7 +66,7 @@
   --paper-raised: oklch(21% 0.009 70);
   --ink: oklch(93% 0.008 85);
   --ink-soft: oklch(74% 0.01 85);
-  --ink-faint: oklch(56% 0.01 85);
+  --ink-faint: oklch(64% 0.012 85);
   --rule: oklch(93% 0.008 85 / 0.14);
   --rule-strong: oklch(93% 0.008 85 / 0.26);
   --seal: oklch(74% 0.12 68);
@@ -72,6 +75,9 @@
   --granted-wash: oklch(72% 0.14 155 / 0.12);
   --denied: oklch(68% 0.16 25);
   --denied-wash: oklch(68% 0.16 25 / 0.12);
+  /* En oscuro, una sombra de tinta clara al 4% no existe: la hoja pierde su
+     asiento. Se sustituye por un realce y un contorno propio. */
+  --sheet-lift: 0 1px 0 oklch(93% 0.008 85 / 0.06), 0 0 0 1px oklch(9% 0 0 / 0.35);
 }
 
 /* --- Grano. Evita que las superficies planas se sientan estériles.
@@ -81,7 +87,8 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.032;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -167,14 +174,14 @@
 .remand-sheet {
   background: var(--paper-raised);
   border: 1px solid var(--rule);
-  border-radius: 3px;
-  box-shadow: 0 1px 0 oklch(21% 0.014 65 / 0.04);
+  border-radius: var(--radius);
+  box-shadow: var(--sheet-lift);
 }
 
 .remand-sunk {
   background: var(--paper-sunk);
   border: 1px solid var(--rule);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 /* --- Sello del veredicto ------------------------------------------------ */
@@ -237,6 +244,16 @@
 .remand-field:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* El propio campo declara el error, no solo el texto que lo acompana. */
+.remand-field[aria-invalid="true"] {
+  border-color: var(--denied);
+}
+
+.remand-field[aria-invalid="true"]:focus-visible {
+  border-color: var(--denied);
+  box-shadow: 0 0 0 3px var(--denied-wash);
 }
 
 .remand-action {
@@ -316,8 +333,8 @@
 
 .remand-meter {
   position: relative;
-  height: 3px;
-  background: var(--rule);
+  height: 5px;
+  background: var(--rule-strong);
   overflow: hidden;
 }
 
@@ -326,7 +343,7 @@
   inset: 0;
   transform-origin: left;
   transform: scaleX(var(--fill, 0));
-  background: var(--ink-soft);
+  background: var(--ink);
   animation: remand-grow 520ms var(--ease-enter) both;
   animation-delay: var(--delay, 0ms);
 }
@@ -354,16 +371,39 @@
 /* --- Esqueleto de carga. Nunca pintar un cero mientras se consulta ------- */
 
 .remand-skeleton {
-  background: linear-gradient(90deg, var(--paper-sunk), var(--rule), var(--paper-sunk));
-  background-size: 200% 100%;
-  animation: remand-shimmer 1.4s ease-in-out infinite;
-  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+  background: var(--paper-sunk);
+  border-radius: var(--radius);
 }
 
-@keyframes remand-shimmer {
+.remand-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--rule), transparent);
+  transform: translateX(-100%);
+  animation: remand-sweep 1.4s var(--ease-enter) infinite;
+}
+
+@keyframes remand-sweep {
   to {
-    background-position: -200% 0;
+    transform: translateX(100%);
   }
+}
+
+/* Icono en linea con texto. El desplazamiento se calcula contra el alto de
+   linea real del contenedor, asi que sirve igual a 13px y a 15px. */
+.remand-glyph-inline {
+  flex-shrink: 0;
+  margin-top: calc((1lh - 16px) / 2);
+}
+
+/* Variante de etiqueta para frases, no para rotulos de una palabra. */
+.remand-label-long {
+  letter-spacing: 0.09em;
+  text-transform: none;
+  font-size: var(--t-small);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -407,7 +447,9 @@
   .remand-ledger-head,
   .remand-ledger-row,
   .remand-ledger-total {
-    grid-template-columns: 1.9fr 0.7fr 0.6fr 0.8fr;
+    grid-template-columns: 2fr 0.62fr 0.52fr 1.1fr;
+    column-gap: var(--ma-block);
+    row-gap: var(--ma-tight);
     align-items: start;
   }
 

@@ -26,11 +26,31 @@ import {
 const FIELDS: { key: keyof EvidenceInput; param: string; label: string; hint: string }[] = [
   { key: "walletAgeDays", param: "age", label: "Antigüedad", hint: "días desde la primera transacción" },
   { key: "activeMonths", param: "active", label: "Meses activos", hint: "con al menos una transacción" },
-  { key: "totalMonths", param: "total", label: "Meses de vida", hint: "desde la primera transacción" },
-  { key: "repayments", param: "repaid", label: "Repagos", hint: "eventos de Repay" },
-  { key: "borrows", param: "borrowed", label: "Préstamos", hint: "eventos de Borrow" },
-  { key: "liquidations", param: "liq", label: "Liquidaciones", hint: "eventos de LiquidationCall" },
-  { key: "distinctProtocols", param: "protocols", label: "Protocolos", hint: "contratos distintos usados" },
+  {
+    key: "totalMonths",
+    param: "total",
+    label: "Meses desde el inicio",
+    hint: "transcurridos desde su primera transacción",
+  },
+  {
+    key: "repayments",
+    param: "repaid",
+    label: "Repagos",
+    hint: "devoluciones registradas en Aave V3",
+  },
+  { key: "borrows", param: "borrowed", label: "Préstamos", hint: "préstamos tomados en Aave V3" },
+  {
+    key: "liquidations",
+    param: "liq",
+    label: "Liquidaciones",
+    hint: "veces que un préstamo se cerró por falta de colateral",
+  },
+  {
+    key: "distinctProtocols",
+    param: "protocols",
+    label: "Contratos usados",
+    hint: "contratos distintos con los que operó",
+  },
 ];
 
 const DEFAULTS: EvidenceInput = {
@@ -79,10 +99,9 @@ function VerificadorInterno() {
       setStatus("idle");
     } catch (error) {
       setStatus("error");
+      // El detalle tecnico del RPC no le sirve a quien mira esta pantalla.
       setMessage(
-        error instanceof Error
-          ? `El contrato rechazó la consulta: ${error.message.split("\n")[0]}`
-          : "El contrato rechazó la consulta.",
+        "Las cifras que ingresaste no forman un historial posible, o la red no respondió. Ajusta los valores y vuelve a consultar.",
       );
     }
   }, []);
@@ -102,7 +121,7 @@ function VerificadorInterno() {
           className="remand-display remand-enter mt-[var(--ma-close)]"
           style={{ fontSize: "var(--t-title)", maxWidth: "24ch", "--delay": "60ms" } as React.CSSProperties}
         >
-          No hace falta confiar en Remand. Basta con comprobarlo.
+          Comprueba el fallo tú mismo, sin pasar por nosotros.
         </h1>
         <p
           className="remand-prose remand-enter mt-[var(--ma-block)]"
@@ -122,6 +141,7 @@ function VerificadorInterno() {
           className="mt-[var(--ma-close)]"
           onSubmit={event => {
             event.preventDefault();
+            if (status === "reading") return;
             consultar(evidence);
           }}
         >
@@ -138,7 +158,8 @@ function VerificadorInterno() {
                   min={0}
                   inputMode="numeric"
                   value={evidence[field.key]}
-                  aria-describedby={`${field.key}-hint`}
+                  aria-invalid={status === "error" ? true : undefined}
+                  aria-describedby={status === "error" ? `${field.key}-hint verificador-error` : `${field.key}-hint`}
                   onChange={event =>
                     setEvidence(current => ({
                       ...current,
@@ -164,7 +185,7 @@ function VerificadorInterno() {
         </form>
       </section>
 
-      <section className="mt-[var(--ma-section)]" aria-live="polite">
+      <section className="mt-[var(--ma-section)]" aria-live="polite" aria-busy={status === "reading"}>
         {status === "error" && (
           <div className="remand-sunk p-[var(--ma-block)]" role="alert">
             <div className="flex items-start gap-[var(--ma-tight)]">
@@ -173,7 +194,9 @@ function VerificadorInterno() {
                 <p className="remand-label" style={{ color: "var(--ink)" }}>
                   Consulta rechazada
                 </p>
-                <p className="remand-prose mt-[var(--ma-tight)]">{message}</p>
+                <p id="verificador-error" className="remand-prose mt-[var(--ma-tight)]">
+                  {message}
+                </p>
                 <p className="mt-[var(--ma-tight)]" style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)" }}>
                   El contrato rechaza evidencia incoherente en vez de corregirla en silencio. Los repagos no pueden
                   superar a los préstamos, ni los meses activos a los de vida.
@@ -191,10 +214,14 @@ function VerificadorInterno() {
         )}
 
         {status === "idle" && verdict && weights && (
-          <div className="remand-sheet p-[var(--ma-block)]">
+          <div className="remand-sheet remand-enter" style={{ padding: "var(--ma-section) var(--ma-block)" }}>
+            <p className="sr-only">
+              Resultado: apelación {verdict.approved ? "concedida" : "denegada"}, puntaje {bps(verdict.totalScore)} por
+              ciento.
+            </p>
             <div className="flex flex-wrap items-end justify-between gap-[var(--ma-block)]">
               <div>
-                <p className="remand-label">Puntaje devuelto por el contrato</p>
+                <p className="remand-label">Puntaje del fallo</p>
                 <p className="remand-figure mt-[var(--ma-tight)]">
                   {bps(verdict.totalScore)}
                   <span style={{ fontSize: "0.28em", marginLeft: "0.08em" }}>%</span>
@@ -210,9 +237,18 @@ function VerificadorInterno() {
                   {verdict.approved ? "Concedida" : "Denegada"}
                 </span>
                 <div>
-                  <p className="remand-label">Colateral exigido</p>
+                  <p className="remand-label">Colateral exigido tras el recálculo</p>
                   <p className="remand-num mt-[var(--ma-hair)]" style={{ fontSize: "var(--t-lead)" }}>
                     {bps(verdict.collateralRequiredBps)}%
+                    <span
+                      style={{
+                        fontSize: "var(--t-micro)",
+                        color: "var(--ink-faint)",
+                        marginLeft: "0.6em",
+                      }}
+                    >
+                      antes 120,00%
+                    </span>
                   </p>
                 </div>
               </div>
@@ -242,7 +278,7 @@ function VerificadorInterno() {
           className="mt-[var(--ma-tight)] flex items-start gap-[var(--ma-tight)]"
           style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)" }}
         >
-          <Terminal size={15} weight="light" aria-hidden="true" style={{ marginTop: "0.2rem", flexShrink: 0 }} />
+          <Terminal size={16} weight="light" aria-hidden="true" className="remand-glyph-inline" />
           El comando se actualiza con las cifras del formulario.
         </p>
       </section>

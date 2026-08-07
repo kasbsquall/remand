@@ -27,7 +27,8 @@ export default function PrimeraInstancia() {
     event.preventDefault();
     const value = address.trim();
     if (!isAddress(value)) {
-      setError("Esa dirección no tiene el formato de una wallet de Ethereum.");
+      setError("Una dirección válida empieza con 0x y tiene 42 caracteres. Revisa que la hayas copiado completa.");
+      document.getElementById("wallet")?.focus();
       return;
     }
     setError(null);
@@ -76,26 +77,29 @@ export default function PrimeraInstancia() {
                 className="mt-[var(--ma-close)]"
                 style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)", maxWidth: "34ch" }}
               >
-                Sobre el monto solicitado. Idéntico para toda wallet, con historial o sin él.
+                Sobre el monto solicitado, según los parámetros de Aave V3 en Arbitrum. Idéntico para toda wallet, con
+                historial o sin él.
               </p>
             </div>
 
             <ul className="grid gap-[var(--ma-close)]" style={{ minWidth: "min(100%, 20rem)" }}>
               <li className="flex items-start gap-[var(--ma-tight)]">
                 <Prohibit
-                  size={17}
+                  size={16}
                   weight="light"
                   aria-hidden="true"
-                  style={{ color: "var(--ink-faint)", marginTop: "0.2rem", flexShrink: 0 }}
+                  className="remand-glyph-inline"
+                  style={{ color: "var(--ink-faint)" }}
                 />
                 <span style={{ fontSize: "var(--t-small)", color: "var(--ink-soft)" }}>No pondera repagos previos</span>
               </li>
               <li className="flex items-start gap-[var(--ma-tight)]">
                 <Prohibit
-                  size={17}
+                  size={16}
                   weight="light"
                   aria-hidden="true"
-                  style={{ color: "var(--ink-faint)", marginTop: "0.2rem", flexShrink: 0 }}
+                  className="remand-glyph-inline"
+                  style={{ color: "var(--ink-faint)" }}
                 />
                 <span style={{ fontSize: "var(--t-small)", color: "var(--ink-soft)" }}>
                   No pondera antigüedad ni constancia
@@ -103,10 +107,11 @@ export default function PrimeraInstancia() {
               </li>
               <li className="flex items-start gap-[var(--ma-tight)]">
                 <Warning
-                  size={17}
+                  size={16}
                   weight="light"
                   aria-hidden="true"
-                  style={{ color: "var(--seal)", marginTop: "0.2rem", flexShrink: 0 }}
+                  className="remand-glyph-inline"
+                  style={{ color: "var(--seal)" }}
                 />
                 <span style={{ fontSize: "var(--t-small)", color: "var(--ink-soft)" }}>
                   El cálculo ocurre fuera de la cadena y no se puede reproducir
@@ -126,9 +131,8 @@ export default function PrimeraInstancia() {
           Abrir apelación
         </h2>
         <p className="remand-prose mt-[var(--ma-close)]">
-          La segunda instancia reúne la evidencia de comportamiento que la primera ignoró y recalcula el veredicto
-          dentro de un contrato en Arbitrum. El fallo queda escrito con su desglose completo, y cualquiera puede
-          reproducirlo.
+          La segunda instancia reúne la evidencia de comportamiento que la primera ignoró y recalcula el fallo dentro de
+          un contrato en Arbitrum. Queda escrito con su desglose completo, y cualquiera puede reproducirlo.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-[var(--ma-block)]" noValidate>
@@ -176,13 +180,23 @@ export default function PrimeraInstancia() {
               <button
                 type="button"
                 className="remand-link"
-                style={{ background: "none", border: 0, padding: 0, cursor: "pointer", font: "inherit" }}
+                style={{
+                  background: "none",
+                  border: 0,
+                  font: "inherit",
+                  cursor: "pointer",
+                  padding: "0.5rem 0",
+                  marginBlock: "-0.5rem",
+                  minHeight: "44px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                }}
                 onClick={() => {
                   setAddress(EJEMPLO);
                   setError(null);
                 }}
               >
-                Usar una wallet de ejemplo
+                Probar con una wallet de ejemplo
               </button>
             </p>
           )}

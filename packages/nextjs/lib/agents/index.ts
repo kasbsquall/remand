@@ -47,7 +47,7 @@ const DIMENSION_LABELS: Record<keyof CollectedEvidence["evidence"], string> = {
   repayments: "repagos registrados",
   borrows: "préstamos tomados",
   liquidations: "liquidaciones sufridas",
-  distinctProtocols: "protocolos distintos usados",
+  distinctProtocols: "contratos distintos usados",
 };
 
 /**
@@ -75,7 +75,7 @@ ${rows}${truncatedNote}`;
 
 const SHARED_RULES = `Reglas que no puedes romper:
 - Usa unicamente los numeros de la evidencia. No inventes datos, montos, fechas ni protocolos.
-- No emitas un veredicto ni digas si el prestamo deberia aprobarse. Eso lo calcula un contrato.
+- No emitas un fallo ni digas si el prestamo deberia aprobarse. Eso lo calcula un contrato.
 - Si una dimension figura como no medible, puedes senalar el vacio, pero no supongas su valor.
 - Escribe en espanol neutro, directo, sin adjetivos de relleno y sin emojis.
 - No uses guion largo como separador.
@@ -220,7 +220,7 @@ function deterministicCase(collected: CollectedEvidence): {
 
   if (e.distinctProtocols >= 4) {
     defense.push({
-      headline: `Interactuó con ${e.distinctProtocols} contratos distintos`,
+      headline: `Operó con ${e.distinctProtocols} contratos distintos`,
       detail: "La variedad de protocolos sugiere uso real del ecosistema y no una wallet de un solo propósito.",
       dimension: "distinctProtocols",
     });
@@ -251,7 +251,7 @@ export async function buildCaseFile(collected: CollectedEvidence, apiKey: string
     return {
       ...fallback,
       source: "deterministic",
-      fallbackReason: "No hay clave del modelo configurada",
+      fallbackReason: "Los agentes no están configurados en esta instancia",
     };
   }
 
@@ -286,7 +286,9 @@ export async function buildCaseFile(collected: CollectedEvidence, apiKey: string
     return {
       ...fallback,
       source: "deterministic",
-      fallbackReason: error instanceof Error ? error.message : "El modelo no respondió",
+      // El mensaje del proveedor puede traer códigos, nombres de modelo o
+      // fragmentos de la petición. Se cierra a un motivo legible.
+      fallbackReason: "Los agentes no estuvieron disponibles",
     };
   }
 }
