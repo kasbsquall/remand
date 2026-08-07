@@ -120,6 +120,308 @@ const deployedContracts = {
       ],
     },
   },
+  "421614": {
+    "remand-verdict": {
+      address: "0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a",
+      txHash: "0x8dda7b87d015a933bf96002e372f564d009a6690aa9b9080b2b7ee286817ed9a",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "CaseAlreadyJudged",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "CaseNotFound",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint8",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          name: "InconsistentEvidence",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "case_id",
+              type: "uint256",
+            },
+          ],
+          name: "getRuling",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "case_id",
+              type: "uint256",
+            },
+          ],
+          name: "isJudged",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint32",
+              name: "wallet_age_days",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "active_months",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "total_months",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "repayments",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "borrows",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "liquidations",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "distinct_protocols",
+              type: "uint32",
+            },
+          ],
+          name: "previewVerdict",
+          outputs: [
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "case_id",
+              type: "uint256",
+            },
+            {
+              internalType: "uint32",
+              name: "wallet_age_days",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "active_months",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "total_months",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "repayments",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "borrows",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "liquidations",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "distinct_protocols",
+              type: "uint32",
+            },
+          ],
+          name: "submitAppeal",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "totalAppeals",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "weights",
+          outputs: [
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+            {
+              internalType: "uint32",
+              name: "",
+              type: "uint32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ],
+    },
+  },
 } as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;
