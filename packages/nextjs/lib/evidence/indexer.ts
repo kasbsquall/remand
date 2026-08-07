@@ -77,31 +77,63 @@ function addressAsTopic(address: Address): string {
   return `0x${"0".repeat(24)}${address.slice(2).toLowerCase()}`;
 }
 
+/** Reintentos ante un choque con el limite de tasa. */
+const RATE_LIMIT_RETRIES = 4;
+
+/**
+ * Una consulta al indexador, con espera y reintento si choca con el limite.
+ *
+ * El limite es de tres llamadas por segundo sobre la clave, no sobre la
+ * peticion, asi que dos expedientes abiertos a la vez lo agotan aunque cada uno
+ * espacie sus propias llamadas. Sin reintento, el segundo visitante recibia un
+ * error y la demo se caia justo cuando mas gente la mira.
+ *
+ * Reintentar es seguro: la consulta es de solo lectura y devuelve lo mismo
+ * cada vez.
+ */
 async function query<T>(params: Record<string, string>, apiKey: string): Promise<T> {
   const url = new URL(ETHERSCAN_V2);
   url.searchParams.set("chainid", String(ARBITRUM_ONE));
   url.searchParams.set("apikey", apiKey);
   for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
 
-  const response = await fetch(url, { headers: { accept: "application/json" } });
-  if (!response.ok) {
-    throw new IndexerUnavailable(`El indexador respondió ${response.status}`);
-  }
+  let lastMessage = "El indexador no respondió";
 
-  const body = (await response.json()) as EtherscanResponse<T>;
+  for (let attempt = 0; attempt <= RATE_LIMIT_RETRIES; attempt++) {
+    if (attempt > 0) await sleep(RATE_LIMIT_SPACING_MS * 2 ** attempt);
 
-  // Etherscan responde status "0" tanto para "no hay resultados" como para
-  // errores reales. Distinguirlos importa: un conjunto vacío es un dato válido
-  // (la wallet no tiene esos eventos), un error no lo es.
-  if (body.status === "0") {
-    const message = typeof body.result === "string" ? body.result : body.message;
-    if (/no transactions found|no records found|no logs found/i.test(message ?? "")) {
-      return [] as unknown as T;
+    const response = await fetch(url, { headers: { accept: "application/json" } });
+
+    if (response.status === 429) {
+      lastMessage = "El indexador está saturado";
+      continue;
     }
-    throw new IndexerUnavailable(message || "El indexador rechazó la consulta");
+    if (!response.ok) {
+      throw new IndexerUnavailable(`El indexador respondió ${response.status}`);
+    }
+
+    const body = (await response.json()) as EtherscanResponse<T>;
+
+    // Etherscan responde status "0" tanto para "no hay resultados" como para
+    // errores reales. Distinguirlos importa: un conjunto vacío es un dato válido
+    // (la wallet no tiene esos eventos), un error no lo es.
+    if (body.status === "0") {
+      const message = typeof body.result === "string" ? body.result : body.message;
+      if (/no transactions found|no records found|no logs found/i.test(message ?? "")) {
+        return [] as unknown as T;
+      }
+      // El limite de tasa llega como status "0" con un mensaje, no como 429.
+      if (/rate limit|max calls/i.test(message ?? "")) {
+        lastMessage = message ?? lastMessage;
+        continue;
+      }
+      throw new IndexerUnavailable(message || "El indexador rechazó la consulta");
+    }
+
+    return body.result as T;
   }
 
-  return body.result as T;
+  throw new IndexerUnavailable(`${lastMessage}. Se reintentó ${RATE_LIMIT_RETRIES} veces.`);
 }
 
 /** Tamano de pagina de la API de logs. */

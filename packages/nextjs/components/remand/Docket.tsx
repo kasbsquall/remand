@@ -9,7 +9,7 @@
 
 import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
-import { RemandMark } from "~~/components/remand/RemandMark";
+import { RemandLockup } from "~~/components/remand/RemandMark";
 import { ARBISCAN_BASE, REMAND_VERDICT_ADDRESS } from "~~/lib/contract";
 
 export function Docket({
@@ -31,13 +31,10 @@ export function Docket({
         >
           <Link
             href="/"
-            className="remand-link inline-flex items-center gap-[var(--ma-tight)]"
+            className="remand-link inline-flex items-start gap-[var(--ma-close)]"
             style={{ textDecoration: "none" }}
           >
-            <RemandMark size={22} />
-            <span className="remand-display" style={{ fontSize: "var(--t-lead)", letterSpacing: "-0.03em" }}>
-              Remand
-            </span>
+            <RemandLockup markSize={26} wordSize="var(--t-body)" />
             <span className="remand-label sr-only sm:not-sr-only">Segunda instancia del crédito on-chain</span>
           </Link>
           <p className="remand-label">{reference}</p>

@@ -1,13 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Remand">
   <title>Remand · Monograma</title>
-  <!-- Asta de la R. -->
-  <path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
-  <!-- Panza de la R. El contador es un cuadrado, no una curva: la evidencia
-       es un bloque de datos, no un adorno. -->
-  <path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linejoin="miter" stroke-linecap="square"/>
-  <!-- Pierna de la R, que se prolonga más allá del cuerpo: la segunda lectura. -->
-  <path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
-  <!-- Marca de expediente: el corte que abre la reconsideración. -->
-  <path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
-  <path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+  <path d="M14 10 V54" stroke="currentColor" stroke-width="6" stroke-linecap="square"/>
+  <path d="M14 10 H40 V32 H14" stroke="currentColor" stroke-width="6" stroke-linecap="square"/>
+  <path d="M30 32 L50 54" stroke="currentColor" stroke-width="6" stroke-linecap="square"/>
+  <path d="M47 12 H58" stroke="currentColor" stroke-width="6" stroke-linecap="butt"/>
+  <path d="M47 24 H58" stroke="currentColor" stroke-width="6" stroke-linecap="butt"/>
 </svg>

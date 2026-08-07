@@ -1,10 +1,19 @@
-import { IBM_Plex_Mono, Newsreader, Orbitron } from "next/font/google";
+import { Bricolage_Grotesque, IBM_Plex_Mono, Newsreader, Orbitron } from "next/font/google";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Metadata } from "next";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import "~~/styles/globals.css";
 import "~~/styles/remand.css";
+
+// Bricolage Grotesque pone la voz de la marca en el logotipo y los titulares.
+// Tiene eje de tamano optico, asi que ajusta su forma al cuerpo en el que se usa
+// en vez de escalar el mismo dibujo.
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 // Newsreader lleva la voz del acta: serif con eje de tamano optico, se
 // comporta distinto en un titular que en un parrafo. Inter queda fuera a
@@ -76,7 +85,7 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
       <body
-        className={`${newsreader.variable} ${plexMono.variable} ${orbitron.variable} font-sans`}
+        className={`${bricolage.variable} ${newsreader.variable} ${plexMono.variable} ${orbitron.variable} font-sans`}
         suppressHydrationWarning
       >
         <ThemeProvider>

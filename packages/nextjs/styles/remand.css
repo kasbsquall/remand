@@ -87,12 +87,23 @@
 
 /* --- Tipografía --------------------------------------------------------- */
 
+/* Titulares. El tracking se cierra mas que en el cuerpo porque a cuerpo grande
+   los huecos entre letras crecen y el bloque se desarma. */
 .remand-display {
-  font-family: var(--font-text), Georgia, serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 600;
-  line-height: 0.94;
-  letter-spacing: -0.022em;
+  line-height: 0.98;
+  letter-spacing: -0.032em;
   text-wrap: balance;
+}
+
+/* Logotipo. Tracking aun mas cerrado que un titular: son seis letras que deben
+   leerse como una sola pieza junto al isotipo. */
+.remand-wordmark {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  font-variation-settings: "opsz" 72;
 }
 
 .remand-figure {
