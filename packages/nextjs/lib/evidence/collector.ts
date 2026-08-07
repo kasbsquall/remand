@@ -41,6 +41,13 @@ export type CollectedEvidence = {
   firstActivityBlock: bigint | null;
   /** Llamadas RPC consumidas. Sirve para vigilar el costo de la lectura. */
   rpcCalls: number;
+  /**
+   * Dimensiones cuyo conteo se corto por limites de la fuente.
+   *
+   * Existe para que un tope de paginacion nunca se presente como una medicion
+   * exacta. Si una dimension figura aqui, la interfaz debe decirlo junto al dato.
+   */
+  truncated: (keyof Evidence)[];
 };
 
 const SECONDS_PER_DAY = 86_400;
@@ -245,6 +252,7 @@ export async function collectEvidence(client: PublicClient, address: Address): P
       observedAtBlock: latestBlock,
       firstActivityBlock: null,
       rpcCalls: reader.calls,
+      truncated: [],
     };
   }
 
@@ -283,5 +291,6 @@ export async function collectEvidence(client: PublicClient, address: Address): P
     observedAtBlock: latestBlock,
     firstActivityBlock,
     rpcCalls: reader.calls,
+    truncated: [],
   };
 }

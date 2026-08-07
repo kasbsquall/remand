@@ -18,6 +18,10 @@ import type { Address } from "viem";
 import type { CollectedEvidence, Evidence, Provenance } from "./collector";
 
 const ETHERSCAN_V2 = "https://api.etherscan.io/v2/api";
+/** Espaciado entre llamadas para no chocar con el limite de 3 por segundo. */
+const RATE_LIMIT_SPACING_MS = 400;
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const ARBITRUM_ONE = 42161;
 
 const SECONDS_PER_DAY = 86_400;
@@ -100,26 +104,52 @@ async function query<T>(params: Record<string, string>, apiKey: string): Promise
   return body.result as T;
 }
 
-/** Cuenta los eventos de préstamo de un tipo para una dirección. */
+/** Tamano de pagina de la API de logs. */
+const PAGE_SIZE = 1000;
+/**
+ * Paginas maximas por dimension.
+ *
+ * Cinco mil eventos bastan para cualquier apelante real. Si una wallet los
+ * supera, el conteo se declara truncado en vez de devolver un numero redondo
+ * que parezca exacto.
+ */
+const MAX_PAGES = 5;
+
+/**
+ * Cuenta los eventos de préstamo de un tipo para una dirección.
+ *
+ * Pagina hasta agotar los resultados. Sin esto, una wallet con mucha actividad
+ * devolvia exactamente 1000 prestamos y 1000 repagos, que es el tope de pagina
+ * de la fuente y no un dato: la razon entre ambos habria salido perfecta por un
+ * artefacto de paginacion.
+ */
 async function countLendingEvents(
   address: Address,
   event: (typeof LENDING_EVENTS)[keyof typeof LENDING_EVENTS],
   apiKey: string,
-): Promise<number> {
-  const logs = await query<unknown[]>(
-    {
-      module: "logs",
-      action: "getLogs",
-      address: AAVE_V3_POOL,
-      fromBlock: "0",
-      toBlock: "latest",
-      topic0: event.topic0,
-      [event.borrowerTopic]: addressAsTopic(address),
-      [`topic0_${event.borrowerTopic.replace("topic", "")}_opr`]: "and",
-    },
-    apiKey,
-  );
-  return logs.length;
+): Promise<{ count: number; truncated: boolean }> {
+  let count = 0;
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    if (page > 1) await sleep(RATE_LIMIT_SPACING_MS);
+    const logs = await query<unknown[]>(
+      {
+        module: "logs",
+        action: "getLogs",
+        address: AAVE_V3_POOL,
+        fromBlock: "0",
+        toBlock: "latest",
+        topic0: event.topic0,
+        [event.borrowerTopic]: addressAsTopic(address),
+        [`topic0_${event.borrowerTopic.replace("topic", "")}_opr`]: "and",
+        page: String(page),
+        offset: String(PAGE_SIZE),
+      },
+      apiKey,
+    );
+    count += logs.length;
+    if (logs.length < PAGE_SIZE) return { count, truncated: false };
+  }
+  return { count, truncated: true };
 }
 
 /**
@@ -171,6 +201,7 @@ export async function collectEvidenceFromIndexer(address: Address, apiKey: strin
       observedAtBlock: 0n,
       firstActivityBlock: null,
       rpcCalls: 1,
+      truncated: [],
     };
   }
 
@@ -193,11 +224,21 @@ export async function collectEvidenceFromIndexer(address: Address, apiKey: strin
     if (tx.input && tx.input !== "0x" && tx.to) protocols.add(tx.to.toLowerCase());
   }
 
-  const [borrows, repayments, liquidations] = await Promise.all([
-    countLendingEvents(address, LENDING_EVENTS.borrow, apiKey),
-    countLendingEvents(address, LENDING_EVENTS.repay, apiKey),
-    countLendingEvents(address, LENDING_EVENTS.liquidation, apiKey),
-  ]);
+  // El plan gratuito de Etherscan admite 3 llamadas por segundo. Estas tres
+  // consultas van en serie y espaciadas: lanzarlas en paralelo choca con el
+  // limite y devuelve un error que se leeria como "sin eventos", falseando el
+  // expediente a la baja.
+  await sleep(RATE_LIMIT_SPACING_MS);
+  const borrows = await countLendingEvents(address, LENDING_EVENTS.borrow, apiKey);
+  await sleep(RATE_LIMIT_SPACING_MS);
+  const repayments = await countLendingEvents(address, LENDING_EVENTS.repay, apiKey);
+  await sleep(RATE_LIMIT_SPACING_MS);
+  const liquidations = await countLendingEvents(address, LENDING_EVENTS.liquidation, apiKey);
+
+  const truncated: (keyof Evidence)[] = [];
+  if (borrows.truncated) truncated.push("borrows");
+  if (repayments.truncated) truncated.push("repayments");
+  if (liquidations.truncated) truncated.push("liquidations");
 
   return {
     address,
@@ -209,14 +250,15 @@ export async function collectEvidenceFromIndexer(address: Address, apiKey: strin
       // repagos parciales, así que un préstamo puede generar varios eventos de
       // repago. Se topa para que el expediente sea coherente sin inventar nada:
       // la dimensión mide qué proporción de la deuda se atendió, no cuántas veces.
-      repayments: Math.min(repayments, borrows),
-      borrows,
-      liquidations,
+      repayments: Math.min(repayments.count, borrows.count),
+      borrows: borrows.count,
+      liquidations: liquidations.count,
       distinctProtocols: protocols.size,
     },
     provenance,
     observedAtBlock: 0n,
     firstActivityBlock: null,
     rpcCalls: 4,
+    truncated,
   };
 }
