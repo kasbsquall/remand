@@ -66,7 +66,7 @@ export default function PrimeraInstancia() {
           Cómo falla la primera instancia
         </h2>
 
-        <div className="remand-sunk mt-[var(--ma-close)] p-[var(--ma-block)]">
+        <div className="remand-die mt-[var(--ma-close)] p-[var(--ma-block)]">
           <div className="flex flex-wrap items-end justify-between gap-[var(--ma-block)]">
             <div>
               <p className="remand-label">Colateral exigido</p>

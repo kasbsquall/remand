@@ -24,6 +24,22 @@
   /* --- Acento único, ocre de sello. Bajo el 5% de los píxeles --- */
   --seal: oklch(52% 0.13 62);
   --seal-wash: oklch(52% 0.13 62 / 0.08);
+  --seal-deep: oklch(38% 0.11 55);
+
+  /* --- Segunda plancha. Un billete se imprime con dos: una de linea, fria y
+         de croma bajisimo, y otra de sello. Esta nunca toca texto de lectura:
+         solo grabado, trama y ornamento, asi que no compite con el acento. --- */
+  --ink-2: oklch(48% 0.048 248);
+  --ink-2-soft: oklch(48% 0.048 248 / 0.44);
+  --ink-2-hair: oklch(48% 0.048 248 / 0.19);
+  --ink-2-ghost: oklch(48% 0.048 248 / 0.07);
+
+  /* Cuarto tono de papel, para cartuchos y celdas de guarda. */
+  --paper-tint: oklch(95.8% 0.012 82);
+
+  /* Relieve seco. La luz entra por arriba a la izquierda, como en un troquel. */
+  --emboss-hi: oklch(99% 0.003 85 / 0.78);
+  --emboss-lo: oklch(21% 0.014 65 / 0.13);
 
   /* --- Semánticos, sólo para el resultado del fallo --- */
   --granted: oklch(46% 0.1 155);
@@ -77,6 +93,14 @@
   --denied-wash: oklch(68% 0.16 25 / 0.12);
   --grain-opacity: 0.09;
   --grain-blend: screen;
+  --seal-deep: oklch(82% 0.09 70);
+  --ink-2: oklch(70% 0.055 245);
+  --ink-2-soft: oklch(70% 0.055 245 / 0.48);
+  --ink-2-hair: oklch(70% 0.055 245 / 0.22);
+  --ink-2-ghost: oklch(70% 0.055 245 / 0.09);
+  --paper-tint: oklch(19.5% 0.011 72);
+  --emboss-hi: oklch(93% 0.008 85 / 0.11);
+  --emboss-lo: oklch(8% 0.006 70 / 0.46);
   /* En oscuro, una sombra de tinta clara al 4% no existe: la hoja pierde su
      asiento. Se sustituye por un realce y un contorno propio. */
   --sheet-lift: 0 1px 0 oklch(93% 0.008 85 / 0.06), 0 0 0 1px oklch(9% 0 0 / 0.35);
@@ -555,27 +579,24 @@
    El papel la lleva antes de que nadie escriba encima. Fija, enorme y casi
    invisible: es lo que hace que la superficie deje de parecer una pagina web. */
 
-.remand-watermark {
+/* Filigrana. Sustituye a la palabra rotada, que era el unico gesto grafico de
+   la pagina y se leia como recurso de plantilla. */
+.remand-filigree {
   position: fixed;
-  top: 50%;
+  top: 46%;
   left: 50%;
   z-index: 0;
   pointer-events: none;
   user-select: none;
-  font-family: var(--font-display), sans-serif;
-  font-weight: 600;
-  font-size: clamp(18rem, 42vw, 42rem);
-  line-height: 1;
-  letter-spacing: -0.06em;
   color: var(--ink);
-  opacity: 0.022;
-  transform: translate(-50%, -50%) rotate(-24deg);
-  white-space: nowrap;
+  opacity: 0.035;
+  transform: translate(-50%, -50%);
 }
 
-:root[data-theme="dark"] .remand-watermark,
-.remand[data-theme="dark"] .remand-watermark {
-  opacity: 0.035;
+:root[data-theme="dark"] .remand-filigree,
+.remand[data-theme="dark"] .remand-filigree {
+  color: var(--ink-2);
+  opacity: 0.055;
 }
 
 /* --- Detalles de acabado ------------------------------------------------ */
@@ -633,5 +654,461 @@
     content: " (" attr(href) ")";
     font-size: 8pt;
     color: #555;
+  }
+}
+
+/* ==========================================================================
+   Profundidad de documento
+   --------------------------------------------------------------------------
+   Un papel no tiene sombra difusa: tiene canto, filete interior y troquel. Se
+   resuelve con sombras de radio cero, no con desenfoque.
+   ========================================================================== */
+
+/* Placa grabada: doble filete interior, como el marco de un titulo. */
+.remand-plate {
+  position: relative;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 0 0 1px var(--emboss-hi),
+    inset 0 0 0 5px var(--ink-2-hair),
+    var(--sheet-lift);
+}
+
+/* La trama va en un pseudo para poder apagarla al imprimir sin tocar el color
+   de la superficie. */
+.remand-plate::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 1px;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(52deg, var(--ink-2-ghost) 0 1px, transparent 1px 7px);
+}
+
+/* Troquel: la hoja se rebaja respecto del papel. Sin desenfoque el borde se
+   lee como un filo, no como una sombra. */
+.remand-die {
+  background: var(--paper-tint);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 0 var(--emboss-lo),
+    inset 0 -1px 0 var(--emboss-hi);
+}
+
+/* Perforacion: linea de corte, no divisor. Los puntos calan en el tono del
+   papel sobre el que se apoyan. */
+.remand-perf {
+  height: 3px;
+  border: 0;
+  margin: 0;
+  background-image:
+    linear-gradient(var(--rule-strong), var(--rule-strong)),
+    radial-gradient(circle at center, var(--paper) 1.4px, transparent 1.5px);
+  background-size:
+    100% 1px,
+    8px 3px;
+  background-position:
+    0 1px,
+    0 0;
+  background-repeat: repeat-x;
+}
+
+.remand-sheet .remand-perf,
+.remand-plate .remand-perf {
+  background-image:
+    linear-gradient(var(--rule-strong), var(--rule-strong)),
+    radial-gradient(circle at center, var(--paper-raised) 1.4px, transparent 1.5px);
+}
+
+/* Entintado en dos planchas: el ornamento multiplica sobre papel claro y suma
+   sobre papel oscuro, igual que el grano. */
+.remand-plate-ink {
+  mix-blend-mode: var(--plate-blend, multiply);
+}
+
+:root[data-theme="dark"] .remand-plate-ink,
+.remand[data-theme="dark"] .remand-plate-ink {
+  --plate-blend: screen;
+}
+
+/* --- Cartucho de cabecera ---------------------------------------------- */
+
+.remand-cartouche {
+  position: relative;
+  padding-inline: var(--ma-close);
+  margin-inline: calc(var(--ma-close) * -1);
+  background: var(--paper-tint);
+  box-shadow: inset 0 -1px 0 var(--rule-strong);
+}
+
+.remand-cartouche::after {
+  content: "";
+  position: absolute;
+  inset: 4px 4px 5px;
+  border: 1px solid var(--ink-2-hair);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+/* --- Placa del fallo, con su roseta --------------------------------------- */
+
+.remand-verdict-plate {
+  position: relative;
+  overflow: hidden;
+}
+
+.remand-verdict-rosette {
+  position: absolute;
+  top: calc(var(--ma-block) * -1);
+  right: calc(var(--ma-block) * -1.4);
+  z-index: 0;
+  pointer-events: none;
+  color: var(--ink-2);
+  opacity: 0.26;
+}
+
+.remand-verdict-plate > *:not(.remand-verdict-rosette) {
+  position: relative;
+  z-index: 1;
+}
+
+/* La cifra sobre la trama necesita su propio asiento para no competir con la
+   linea de fondo. */
+.remand-verdict-plate .remand-figure {
+  text-shadow: 0 0 8px var(--paper-raised);
+}
+
+/* --- Sello de validacion --------------------------------------------------
+   La roseta va detras y descentrada, como un tampon que no cayo perfectamente
+   alineado sobre el timbre impreso. */
+
+.remand-sealbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  isolation: isolate;
+}
+
+.remand-sealbox-rosette {
+  position: absolute;
+  top: 50%;
+  left: -20px;
+  z-index: -1;
+  pointer-events: none;
+  color: currentColor;
+  opacity: 0.3;
+  transform: translateY(-50%) rotate(-8deg);
+}
+
+.remand-seal {
+  box-shadow:
+    inset 1px 1px 0 var(--emboss-lo),
+    inset -1px -1px 0 var(--emboss-hi);
+}
+
+/* Tres filetes es lo que distingue un sello de un borde doble. */
+.remand-seal::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid currentColor;
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+/* --- Fondo de guarda -----------------------------------------------------
+   La trama que lleva un cheque bajo la zona de importe. Va como data-uri, asi
+   que no anade un nodo por celda ni pide red. El tema lo resuelve el modo de
+   fusion, no una segunda copia del SVG. */
+
+.remand-guard {
+  background-color: var(--paper-tint);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='16'%3E%3Cpath d='M0 8 Q6 2 12 8 T24 8 T36 8 T48 8' fill='none' stroke='%23000' stroke-width='0.5' stroke-opacity='0.5'/%3E%3Cpath d='M0 12 Q6 6 12 12 T24 12 T36 12 T48 12' fill='none' stroke='%23000' stroke-width='0.5' stroke-opacity='0.28'/%3E%3C/svg%3E");
+  background-size: 48px 16px;
+  background-blend-mode: var(--guard-blend, multiply);
+}
+
+:root[data-theme="dark"] .remand-guard,
+.remand[data-theme="dark"] .remand-guard {
+  --guard-blend: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='16'%3E%3Cpath d='M0 8 Q6 2 12 8 T24 8 T36 8 T48 8' fill='none' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.22'/%3E%3Cpath d='M0 12 Q6 6 12 12 T24 12 T36 12 T48 12' fill='none' stroke='%23ffffff' stroke-width='0.5' stroke-opacity='0.12'/%3E%3C/svg%3E");
+}
+
+@media print {
+  .remand-plate::before,
+  .remand-guard,
+  .remand-verdict-rosette,
+  .remand-sealbox-rosette {
+    display: none;
+  }
+
+  .remand-plate {
+    box-shadow: none;
+  }
+
+  .remand-filigree {
+    position: absolute;
+    opacity: 0.06;
+  }
+}
+
+/* ==========================================================================
+   Huella del expediente
+   --------------------------------------------------------------------------
+   Cuatro registros de forma distinta, nunca cuatro cajas iguales: los dos
+   primeros son escalas de tiempo y ocupan el ancho; los dos de abajo se
+   reparten en proporcion desigual.
+   ========================================================================== */
+
+.remand-fingerprint {
+  display: grid;
+  gap: var(--ma-block) var(--ma-section);
+  padding: var(--ma-block);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .remand-fingerprint {
+    grid-template-columns: 1.45fr 1fr;
+  }
+
+  .remand-register:nth-child(1),
+  .remand-register:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+}
+
+.remand-register-plot {
+  margin-top: var(--ma-close);
+}
+
+.remand-register-note {
+  margin-top: var(--ma-tight);
+  max-width: 54ch;
+  font-size: var(--t-micro);
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+/* --- Escala de antiguedad --- */
+
+.remand-scale-track {
+  position: relative;
+  height: 26px;
+  border-bottom: 1px solid var(--rule-strong);
+  container-type: inline-size;
+}
+
+.remand-scale-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 7px;
+  background: var(--ink-2-hair);
+  transform-origin: bottom;
+  animation: remand-tick 200ms var(--ease-enter) both;
+  animation-delay: calc(var(--i) * 24ms);
+}
+
+.remand-scale-tick[data-major] {
+  height: 14px;
+  background: var(--ink-2-soft);
+}
+
+.remand-scale-cap {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  height: 26px;
+  background: var(--ink-faint);
+}
+
+/* La aguja se posiciona contra el ancho real del carril, no del viewport. */
+.remand-scale-needle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 26px;
+  background: var(--seal);
+  transform: translateX(calc(var(--pos) * (100cqw - 1px)));
+  animation: remand-needle 480ms var(--ease-enter) both;
+  animation-delay: 120ms;
+}
+
+.remand-scale-needle-head {
+  position: absolute;
+  top: -1px;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  background: var(--seal);
+  transform: rotate(45deg);
+}
+
+@keyframes remand-needle {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes remand-tick {
+  from {
+    opacity: 0;
+    transform: scaleY(0.2);
+  }
+}
+
+.remand-scale-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--ma-hair);
+  font-size: var(--t-micro);
+  color: var(--ink-faint);
+}
+
+/* --- Peine de constancia --- */
+
+.remand-comb {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 34px;
+}
+
+.remand-comb-tooth {
+  flex: 1 1 0;
+  min-width: 2px;
+  height: 60%;
+  background: var(--ink-2-hair);
+  transform-origin: bottom;
+  animation: remand-tick 220ms var(--ease-enter) both;
+  animation-delay: calc(var(--i) * 12ms);
+}
+
+.remand-comb-tooth[data-inked] {
+  height: 100%;
+  background: var(--ink);
+}
+
+/* --- Balance de prestamos --- */
+
+.remand-balance-row {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 3ch;
+  align-items: center;
+  gap: var(--ma-close);
+}
+
+.remand-balance-bar {
+  position: relative;
+  display: block;
+  height: 12px;
+  background: var(--paper-sunk);
+  box-shadow: inset 0 0 0 1px var(--ink-2-hair);
+}
+
+.remand-balance-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(var(--fill, 0));
+  background: var(--ink);
+  animation: remand-grow 520ms var(--ease-enter) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.remand-balance-bar[data-side="down"] .remand-balance-fill {
+  background: var(--ink-2);
+}
+
+.remand-balance-value {
+  font-size: var(--t-small);
+  text-align: right;
+}
+
+.remand-balance-line {
+  position: relative;
+  height: 9px;
+  margin: 3px 0;
+  background-image: linear-gradient(var(--rule-strong), var(--rule-strong));
+  background-size: 100% 1px;
+  background-position: 0 4px;
+  background-repeat: no-repeat;
+}
+
+.remand-balance-notch {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 9px;
+  background: var(--denied);
+  transform: rotate(14deg);
+}
+
+.remand-balance-liq {
+  margin-top: var(--ma-tight);
+  font-size: var(--t-micro);
+  color: var(--ink-faint);
+}
+
+/* --- Cuenta de diversidad --- */
+
+.remand-tally {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.remand-tally-slot {
+  width: 10px;
+  height: 22px;
+  box-shadow: inset 0 0 0 1px var(--ink-2-soft);
+  transform-origin: bottom;
+  animation: remand-tick 200ms var(--ease-enter) both;
+  animation-delay: calc(var(--i) * 30ms);
+}
+
+.remand-tally-slot[data-filled] {
+  background: var(--ink);
+  box-shadow: none;
+}
+
+.remand-tally-value {
+  margin-left: var(--ma-close);
+  font-size: var(--t-lead);
+  font-weight: 500;
+}
+
+.remand-tally-cap {
+  font-size: var(--t-micro);
+  color: var(--ink-faint);
+}
+
+/* Sin movimiento, las piezas deben quedar en su estado final y no en el
+   inicial de su animacion. */
+@media (prefers-reduced-motion: reduce) {
+  .remand-balance-fill {
+    transform: scaleX(var(--fill, 0));
+  }
+
+  .remand-scale-needle {
+    transform: translateX(calc(var(--pos) * (100cqw - 1px)));
+  }
+
+  .remand-scale-tick,
+  .remand-comb-tooth,
+  .remand-tally-slot {
+    transform: none;
+  }
+}
+
+@media print {
+  .remand-fingerprint {
+    break-inside: avoid;
   }
 }

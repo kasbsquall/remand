@@ -14,7 +14,10 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, CheckCircle, Gavel, Scales, SealCheck, ShieldChevron, Warning } from "@phosphor-icons/react";
 import { Docket, docketNumber } from "~~/components/remand/Docket";
+import { Guilloche } from "~~/components/remand/Guilloche";
+import { CaseFingerprint } from "~~/components/remand/CaseFingerprint";
 import { RegisterRuling } from "~~/components/remand/RegisterRuling";
+import { EvidenceLimits, Shortfall } from "~~/components/remand/ShortfallAndLimits";
 import { VerdictLedger, type Weights } from "~~/components/remand/VerdictLedger";
 import { ARBISCAN_BASE, bps, REMAND_VERDICT_ADDRESS, type Verdict } from "~~/lib/contract";
 import type { Argument, CaseFile } from "~~/lib/agents";
@@ -107,8 +110,8 @@ function EvidenceGrid({ data }: { data: AppealResponse }) {
           salio el dato. Sin ella quedaba un hueco relleno que se leia como un
           fallo de maquetacion. */}
       <div
-        className="remand-enter p-[var(--ma-close)]"
-        style={{ background: "var(--paper-raised)", "--delay": "210ms" } as React.CSSProperties}
+        className="remand-enter remand-guard p-[var(--ma-close)]"
+        style={{ "--delay": "210ms" } as React.CSSProperties}
       >
         <p className="remand-label">Fuente</p>
         <p className="mt-[var(--ma-hair)]" style={{ fontSize: "var(--t-small)", lineHeight: 1.4 }}>
@@ -310,6 +313,9 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
             <div className="mt-[var(--ma-close)]">
               <EvidenceGrid data={data} />
             </div>
+            <div className="mt-[var(--ma-close)]">
+              <CaseFingerprint evidence={data.evidence} />
+            </div>
           </section>
 
           <section
@@ -359,7 +365,13 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
             className="remand-enter mt-[var(--ma-chapter)]"
             style={{ "--delay": "180ms" } as React.CSSProperties}
           >
-            <div className="remand-sheet" style={{ padding: "var(--ma-section) var(--ma-block)" }}>
+            <div className="remand-plate remand-verdict-plate" style={{ padding: "var(--ma-section) var(--ma-block)" }}>
+              <Guilloche
+                seed={data.caseId}
+                size={260}
+                className="remand-verdict-rosette remand-plate-ink"
+                microtext={`expediente ${data.caseId.slice(0, 12)}`}
+              />
               <div className="flex flex-wrap items-end justify-between gap-[var(--ma-block)]">
                 <div>
                   <p className="remand-label">Puntaje del fallo</p>
@@ -370,15 +382,25 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
                 </div>
 
                 <div className="grid gap-[var(--ma-close)]">
-                  <span
-                    className={`remand-seal ${data.verdict.approved ? "remand-seal-granted" : "remand-seal-denied"}`}
-                  >
-                    {data.verdict.approved ? (
-                      <CheckCircle size={15} weight="light" aria-hidden="true" />
-                    ) : (
-                      <Warning size={15} weight="light" aria-hidden="true" />
-                    )}
-                    {data.verdict.approved ? "Concedida" : "Denegada"}
+                  <span className="remand-sealbox">
+                    <Guilloche
+                      seed={`${data.caseId}-fallo`}
+                      size={104}
+                      layers={3}
+                      weight={0.55}
+                      steps={480}
+                      className="remand-sealbox-rosette"
+                    />
+                    <span
+                      className={`remand-seal ${data.verdict.approved ? "remand-seal-granted" : "remand-seal-denied"}`}
+                    >
+                      {data.verdict.approved ? (
+                        <CheckCircle size={15} weight="light" aria-hidden="true" />
+                      ) : (
+                        <Warning size={15} weight="light" aria-hidden="true" />
+                      )}
+                      {data.verdict.approved ? "Concedida" : "Denegada"}
+                    </span>
                   </span>
                   <div>
                     <p className="remand-label">Colateral exigido tras el recálculo</p>
@@ -395,6 +417,25 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
               <hr className="remand-rule" style={{ margin: "var(--ma-section) 0 var(--ma-block)" }} />
 
               <VerdictLedger verdict={data.verdict} weights={data.weights} />
+            </div>
+
+            {!data.verdict.approved && (
+              <div className="mt-[var(--ma-close)]">
+                <Shortfall verdict={data.verdict} weights={data.weights} />
+              </div>
+            )}
+          </section>
+
+          <section
+            className="remand-enter mt-[var(--ma-section)]"
+            style={{ "--delay": "200ms" } as React.CSSProperties}
+            aria-labelledby="limites-heading"
+          >
+            <h2 id="limites-heading" className="remand-label">
+              Alcance de la evidencia
+            </h2>
+            <div className="mt-[var(--ma-close)]">
+              <EvidenceLimits />
             </div>
           </section>
 

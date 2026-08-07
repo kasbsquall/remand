@@ -10,6 +10,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import { RemandLockup } from "~~/components/remand/RemandMark";
+import { Guilloche, GuillocheRule, MicrotextRule } from "~~/components/remand/Guilloche";
 import { ARBISCAN_BASE, REMAND_VERDICT_ADDRESS } from "~~/lib/contract";
 
 /**
@@ -65,24 +66,21 @@ export function Docket({
   return (
     <div className="remand relative min-h-[100dvh]">
       <div className="remand-grain" aria-hidden="true" />
-      <div className="remand-watermark" aria-hidden="true">
-        REMAND
+      <div className="remand-filigree" aria-hidden="true">
+        <Guilloche seed={reference} size={880} layers={6} weight={0.42} steps={620} />
       </div>
 
       <div className="relative z-[1] mx-auto w-full max-w-5xl px-[var(--ma-block)] pb-[var(--ma-chapter)]">
-        <header
-          className="flex flex-wrap items-center justify-between gap-[var(--ma-close)] py-[var(--ma-block)]"
-          style={{ borderBottom: "1px solid var(--rule-strong)" }}
-        >
+        <header className="remand-cartouche flex flex-wrap items-center justify-between gap-[var(--ma-close)] py-[var(--ma-block)]">
           <Link
             href="/"
-            className="remand-link inline-flex items-baseline gap-[var(--ma-close)]"
+            className="remand-link inline-flex items-center gap-[var(--ma-close)]"
             style={{ textDecoration: "none" }}
           >
             <RemandLockup markSize={26} wordSize="var(--t-body)" />
             <span
               className="remand-label sr-only sm:not-sr-only"
-              style={{ alignSelf: "flex-end", paddingBottom: "0.15em" }}
+              style={{ maxWidth: "34ch", lineHeight: 1.4, textWrap: "balance" }}
             >
               Segunda instancia del crédito on-chain
             </span>
@@ -92,8 +90,13 @@ export function Docket({
             <FiledAt filed={filed} />
           </div>
         </header>
+        <GuillocheRule seed={reference} />
 
         <main>{children}</main>
+      </div>
+
+      <div className="relative z-[1] mx-auto w-full max-w-5xl px-[var(--ma-block)]">
+        <MicrotextRule text="verificable en arbitrum · contrato publico · sin custodia" />
       </div>
 
       <footer

@@ -252,6 +252,73 @@ export async function totalAppeals(): Promise<bigint> {
   })) as bigint;
 }
 
+/** Una dimensión y cuánto margen le queda sin usar. */
+export type Margin = {
+  dimension: string;
+  label: string;
+  /** Aporte actual, en puntos base sobre el total. */
+  current: number;
+  /** Aporte máximo que podría dar, que es su peso completo. */
+  ceiling: number;
+};
+
+const DIMENSION_LABELS: Record<string, string> = {
+  repayment: "historial de repago",
+  consistency: "consistencia de actividad",
+  age: "antigüedad de la wallet",
+  liquidation: "ausencia de liquidaciones",
+  diversity: "diversidad de contratos",
+};
+
+/**
+ * Qué le faltó a un expediente denegado.
+ *
+ * Un rechazo sin explicación accionable es exactamente lo que Remand reprocha a
+ * la primera instancia, así que denegar sin decir qué faltó repetiría el
+ * problema una instancia más abajo. El cálculo es local a propósito: replica la
+ * misma división entera del contrato sobre cifras que el contrato ya devolvió,
+ * no inventa un modelo paralelo.
+ */
+export function marginsFor(
+  verdict: Verdict,
+  weights: { repayment: number; consistency: number; age: number; liquidation: number; diversity: number },
+): Margin[] {
+  const contribution = (score: number, weight: number) => Math.floor((score * weight) / 10_000);
+  const rows: Margin[] = [
+    {
+      dimension: "repayment",
+      label: DIMENSION_LABELS.repayment,
+      current: contribution(verdict.scoreRepayment, weights.repayment),
+      ceiling: weights.repayment,
+    },
+    {
+      dimension: "consistency",
+      label: DIMENSION_LABELS.consistency,
+      current: contribution(verdict.scoreConsistency, weights.consistency),
+      ceiling: weights.consistency,
+    },
+    {
+      dimension: "age",
+      label: DIMENSION_LABELS.age,
+      current: contribution(verdict.scoreAge, weights.age),
+      ceiling: weights.age,
+    },
+    {
+      dimension: "liquidation",
+      label: DIMENSION_LABELS.liquidation,
+      current: contribution(verdict.scoreLiquidation, weights.liquidation),
+      ceiling: weights.liquidation,
+    },
+    {
+      dimension: "diversity",
+      label: DIMENSION_LABELS.diversity,
+      current: contribution(verdict.scoreDiversity, weights.diversity),
+      ceiling: weights.diversity,
+    },
+  ];
+  return rows.sort((a, b) => b.ceiling - b.current - (a.ceiling - a.current));
+}
+
 /** Formatea puntos base como porcentaje con dos decimales. */
 export function bps(value: number): string {
   return (value / 100).toFixed(2);
