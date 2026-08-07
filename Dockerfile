@@ -23,7 +23,6 @@ COPY packages/stylus/package.json ./packages/stylus/
 RUN corepack enable && yarn install --immutable --mode=skip-build || yarn install
 
 COPY packages/nextjs ./packages/nextjs
-COPY packages/stylus/deployments ./packages/stylus/deployments
 
 # La compilación descarga las tipografías y las deja embebidas, así que el
 # contenedor en ejecución no depende de Google Fonts.
