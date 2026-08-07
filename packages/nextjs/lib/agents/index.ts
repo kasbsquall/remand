@@ -142,6 +142,11 @@ async function runAgent(
   return parsePoints(text, collected);
 }
 
+/** Concuerda el sustantivo con la cifra. "3 prestamo(s)" es descuido, no economia. */
+function plural(count: number, singular: string, many: string): string {
+  return `${count} ${count === 1 ? singular : many}`;
+}
+
 /**
  * Argumentos deterministas, sin modelo.
  *
@@ -160,7 +165,7 @@ function deterministicCase(collected: CollectedEvidence): {
 
   if (e.walletAgeDays >= 365) {
     defense.push({
-      headline: `La wallet opera hace ${Math.floor(e.walletAgeDays / 365)} año(s)`,
+      headline: `La wallet opera hace ${plural(Math.floor(e.walletAgeDays / 365), "año", "años")}`,
       detail: `Su primera transacción fue hace ${e.walletAgeDays} días. La permanencia es evidencia que una evaluación basada en saldo no registra.`,
       dimension: "walletAgeDays",
     });
@@ -175,7 +180,7 @@ function deterministicCase(collected: CollectedEvidence): {
   if (e.borrows > 0 && e.repayments === e.borrows) {
     defense.push({
       headline: "Devolvió todo lo que pidió prestado",
-      detail: `Registra ${e.borrows} préstamo(s) y ${e.repayments} repago(s) en protocolos de préstamo. Es la señal más directa de cumplimiento.`,
+      detail: `Registra ${plural(e.borrows, "préstamo", "préstamos")} y ${plural(e.repayments, "repago", "repagos")} en protocolos de préstamo. Es la señal más directa de cumplimiento.`,
       dimension: "repayments",
     });
   } else if (e.borrows === 0) {
@@ -189,7 +194,7 @@ function deterministicCase(collected: CollectedEvidence): {
 
   if (e.liquidations > 0) {
     challenges.push({
-      headline: `Registra ${e.liquidations} liquidación(es)`,
+      headline: `Registra ${plural(e.liquidations, "liquidación", "liquidaciones")}`,
       detail:
         "Una posición liquidada indica que la wallet no cubrió su colateral a tiempo. Es el antecedente más adverso del expediente.",
       dimension: "liquidations",

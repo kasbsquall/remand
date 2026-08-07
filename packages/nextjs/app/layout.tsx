@@ -1,13 +1,26 @@
-import { Inter, Orbitron } from "next/font/google";
+import { IBM_Plex_Mono, Newsreader, Orbitron } from "next/font/google";
 import "@rainbow-me/rainbowkit/styles.css";
 import { Metadata } from "next";
 import { ScaffoldEthAppWithProviders } from "~~/components/ScaffoldEthAppWithProviders";
 import { ThemeProvider } from "~~/components/ThemeProvider";
 import "~~/styles/globals.css";
+import "~~/styles/remand.css";
 
-const inter = Inter({
+// Newsreader lleva la voz del acta: serif con eje de tamano optico, se
+// comporta distinto en un titular que en un parrafo. Inter queda fuera a
+// proposito, es la firma tipografica del output generado.
+const newsreader = Newsreader({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-text",
+  display: "swap",
+});
+
+// Toda cifra que se compare en columna va en mono con figuras tabulares.
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-data",
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 const orbitron = Orbitron({
@@ -21,9 +34,10 @@ const baseUrl = process.env.VERCEL_URL
   : `http://localhost:${process.env.PORT || 3000}`;
 const imageUrl = `${baseUrl}/thumbnail.jpg`;
 
-const title = "Create Stylus Dapp";
-const titleTemplate = "%s | Create Stylus Dapp";
-const description = "Built with 🏗 Scaffold-Stylus";
+const title = "Remand";
+const titleTemplate = "%s | Remand";
+const description =
+  "La segunda instancia del credito on-chain. Si te niegan un prestamo, tu caso se reabre con evidencia y el veredicto se recalcula en Arbitrum Stylus, verificable por cualquiera.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -54,14 +68,17 @@ export const metadata: Metadata = {
     description,
   },
   icons: {
-    icon: [{ url: "/favicon.png", sizes: "32x32", type: "image/png" }],
+    icon: [{ url: "/remand-mark.svg", type: "image/svg+xml" }],
   },
 };
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   return (
     <html suppressHydrationWarning>
-      <body className={`${inter.variable} ${orbitron.variable} font-sans`} suppressHydrationWarning>
+      <body
+        className={`${newsreader.variable} ${plexMono.variable} ${orbitron.variable} font-sans`}
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           <ScaffoldEthAppWithProviders>{children}</ScaffoldEthAppWithProviders>
         </ThemeProvider>

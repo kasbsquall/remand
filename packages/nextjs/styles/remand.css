@@ -1,0 +1,419 @@
+/* ==========================================================================
+   Remand · capa de diseño
+   --------------------------------------------------------------------------
+   Dirección: acta judicial técnica. El producto es un expediente de apelación
+   crediticia, y el nombre es un término legal, así que la interfaz se comporta
+   como un registro de tribunal: papel tibio, pauta de líneas finas, numeración
+   de expediente y cifras alineadas en columna. No es una landing de DeFi.
+
+   Todo vive bajo `.remand` para no alterar las pantallas que trae
+   Scaffold-Stylus, que usan daisyUI y otro sistema.
+   ========================================================================== */
+
+.remand {
+  /* --- Tinta y papel. Una sola familia de grises, tibia. Nunca #000 ni #fff --- */
+  --paper: oklch(97.2% 0.006 85);
+  --paper-sunk: oklch(94.6% 0.008 85);
+  --paper-raised: oklch(98.8% 0.004 85);
+  --ink: oklch(21% 0.014 65);
+  --ink-soft: oklch(43% 0.012 65);
+  --ink-faint: oklch(60% 0.01 65);
+  --rule: oklch(21% 0.014 65 / 0.11);
+  --rule-strong: oklch(21% 0.014 65 / 0.22);
+
+  /* --- Acento único, ocre de sello. Bajo el 5% de los píxeles --- */
+  --seal: oklch(52% 0.13 62);
+  --seal-wash: oklch(52% 0.13 62 / 0.08);
+
+  /* --- Semánticos, sólo para el resultado del fallo --- */
+  --granted: oklch(46% 0.1 155);
+  --granted-wash: oklch(46% 0.1 155 / 0.09);
+  --denied: oklch(48% 0.15 22);
+  --denied-wash: oklch(48% 0.15 22 / 0.09);
+
+  /* --- Escala modular 1.25, con tracking corregido por tamaño --- */
+  --t-micro: 0.6875rem;
+  --t-small: 0.8125rem;
+  --t-body: 0.9375rem;
+  --t-lead: 1.1875rem;
+  --t-title: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+  --t-figure: clamp(3.25rem, 2rem + 5vw, 5.5rem);
+
+  /* --- Ma: intervalo variable. Del más pequeño al mayor hay ratio 1:24 --- */
+  --ma-hair: 0.25rem;
+  --ma-tight: 0.5rem;
+  --ma-close: 0.875rem;
+  --ma-block: 1.75rem;
+  --ma-section: 3.5rem;
+  --ma-chapter: 6rem;
+
+  --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-text), Georgia, serif;
+  font-size: var(--t-body);
+  line-height: 1.6;
+}
+
+:root[data-theme="dark"] .remand,
+.remand[data-theme="dark"] {
+  --paper: oklch(17% 0.008 70);
+  --paper-sunk: oklch(13.5% 0.008 70);
+  --paper-raised: oklch(21% 0.009 70);
+  --ink: oklch(93% 0.008 85);
+  --ink-soft: oklch(74% 0.01 85);
+  --ink-faint: oklch(56% 0.01 85);
+  --rule: oklch(93% 0.008 85 / 0.14);
+  --rule-strong: oklch(93% 0.008 85 / 0.26);
+  --seal: oklch(74% 0.12 68);
+  --seal-wash: oklch(74% 0.12 68 / 0.12);
+  --granted: oklch(72% 0.14 155);
+  --granted-wash: oklch(72% 0.14 155 / 0.12);
+  --denied: oklch(68% 0.16 25);
+  --denied-wash: oklch(68% 0.16 25 / 0.12);
+}
+
+/* --- Grano. Evita que las superficies planas se sientan estériles.
+       Fijo y sin eventos de puntero, para no repintar al hacer scroll. --- */
+.remand-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.032;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* --- Tipografía --------------------------------------------------------- */
+
+.remand-display {
+  font-family: var(--font-text), Georgia, serif;
+  font-weight: 600;
+  line-height: 0.94;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+.remand-figure {
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: var(--t-figure);
+  font-weight: 500;
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
+}
+
+/* Toda cifra que se compare en columna. Sin esto los dígitos bailan. */
+.remand-num {
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
+  letter-spacing: -0.01em;
+}
+
+/* Etiqueta de campo del acta. Diminuta y espaciada, contrasta con el dato. */
+.remand-label {
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: var(--t-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+
+.remand-prose {
+  max-width: 62ch;
+  text-wrap: pretty;
+  color: var(--ink-soft);
+}
+
+/* --- Pauta del acta ----------------------------------------------------- */
+
+.remand-rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+/* Fila de expediente: se apoya en masa y pauta, nunca en un borde de color
+   a la izquierda, que es el delator más fiable de interfaz generada. */
+.remand-row {
+  display: grid;
+  gap: var(--ma-close);
+  padding: var(--ma-close) 0;
+  border-top: 1px solid var(--rule);
+  transition:
+    background-color 160ms var(--ease-enter),
+    transform 160ms var(--ease-enter);
+}
+
+.remand-row:first-child {
+  border-top: 0;
+}
+
+/* --- Superficies -------------------------------------------------------- */
+
+.remand-sheet {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 oklch(21% 0.014 65 / 0.04);
+}
+
+.remand-sunk {
+  background: var(--paper-sunk);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+}
+
+/* --- Sello del veredicto ------------------------------------------------ */
+
+.remand-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ma-tight);
+  padding: 0.3rem 0.7rem;
+  border-radius: 2px;
+  font-family: var(--font-data), monospace;
+  font-size: var(--t-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}
+
+.remand-seal-granted {
+  color: var(--granted);
+  background: var(--granted-wash);
+}
+
+.remand-seal-denied {
+  color: var(--denied);
+  background: var(--denied-wash);
+}
+
+/* --- Controles ---------------------------------------------------------- */
+
+.remand-field {
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  padding: 0.7rem 0.85rem;
+  color: var(--ink);
+  font-family: var(--font-data), monospace;
+  font-size: var(--t-small);
+  letter-spacing: -0.01em;
+  transition:
+    border-color 140ms var(--ease-enter),
+    box-shadow 140ms var(--ease-enter);
+}
+
+.remand-field::placeholder {
+  color: var(--ink-faint);
+}
+
+.remand-field:hover:not(:disabled) {
+  border-color: var(--ink-faint);
+}
+
+.remand-field:focus-visible {
+  outline: none;
+  border-color: var(--seal);
+  box-shadow: 0 0 0 3px var(--seal-wash);
+}
+
+.remand-field:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.remand-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 2px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-data), monospace;
+  font-size: var(--t-small);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    transform 140ms var(--ease-enter),
+    opacity 140ms var(--ease-enter),
+    background-color 140ms var(--ease-enter);
+}
+
+.remand-action:hover:not(:disabled) {
+  opacity: 0.86;
+}
+
+.remand-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.remand-action:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--seal-wash);
+  border-color: var(--seal);
+}
+
+.remand-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.remand-action-quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule-strong);
+}
+
+.remand-action-quiet:hover:not(:disabled) {
+  border-color: var(--ink-faint);
+  background: var(--seal-wash);
+  opacity: 1;
+}
+
+/* --- Enlaces ------------------------------------------------------------ */
+
+.remand-link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--rule-strong);
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color 140ms var(--ease-enter);
+}
+
+.remand-link:hover {
+  text-decoration-color: var(--seal);
+}
+
+.remand-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--seal-wash);
+  border-radius: 2px;
+}
+
+/* --- Barra de puntaje. scaleX desde la izquierda, nunca width ------------ */
+
+.remand-meter {
+  position: relative;
+  height: 3px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.remand-meter-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  transform: scaleX(var(--fill, 0));
+  background: var(--ink-soft);
+  animation: remand-grow 520ms var(--ease-enter) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes remand-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* --- Coreografía de entrada. Escalonada, sólo transform y opacity -------- */
+
+.remand-enter {
+  animation: remand-rise 260ms var(--ease-enter) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes remand-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* --- Esqueleto de carga. Nunca pintar un cero mientras se consulta ------- */
+
+.remand-skeleton {
+  background: linear-gradient(90deg, var(--paper-sunk), var(--rule), var(--paper-sunk));
+  background-size: 200% 100%;
+  animation: remand-shimmer 1.4s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+@keyframes remand-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .remand *,
+  .remand-enter,
+  .remand-meter-fill,
+  .remand-skeleton {
+    animation: none !important;
+    transition-duration: 1ms !important;
+  }
+
+  .remand-meter-fill {
+    transform: scaleX(var(--fill, 0));
+  }
+}
+
+/* --- Rejilla del acta --------------------------------------------------
+   Va en CSS y no en estilos inline: un `style` inline gana sobre la clase
+   responsive de Tailwind, así que la tabla se quedaba en dos columnas en
+   escritorio y los tres números caían fuera de su columna. */
+
+.remand-ledger-head,
+.remand-ledger-row,
+.remand-ledger-total {
+  display: grid;
+  gap: var(--ma-close);
+  grid-template-columns: 1fr;
+}
+
+.remand-ledger-row {
+  padding: var(--ma-close) 0;
+  border-top: 1px solid var(--rule);
+}
+
+.remand-ledger-figures {
+  display: flex;
+  gap: var(--ma-block);
+}
+
+@media (min-width: 768px) {
+  .remand-ledger-head,
+  .remand-ledger-row,
+  .remand-ledger-total {
+    grid-template-columns: 1.9fr 0.7fr 0.6fr 0.8fr;
+    align-items: start;
+  }
+
+  /* Los tres números dejan de ser un bloque y pasan a ocupar sus columnas. */
+  .remand-ledger-figures {
+    display: contents;
+  }
+
+  .remand-ledger-figure {
+    display: contents;
+  }
+
+  .remand-ledger-figure dt {
+    display: none;
+  }
+
+  .remand-ledger-figure dd {
+    text-align: right;
+  }
+}

@@ -1,0 +1,459 @@
+<title>Remand · Sistema de diseño</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper: oklch(97.2% 0.006 85);
+    --paper-sunk: oklch(94.6% 0.008 85);
+    --paper-raised: oklch(98.8% 0.004 85);
+    --ink: oklch(21% 0.014 65);
+    --ink-soft: oklch(43% 0.012 65);
+    --ink-faint: oklch(60% 0.01 65);
+    --rule: oklch(21% 0.014 65 / 0.11);
+    --rule-strong: oklch(21% 0.014 65 / 0.22);
+    --seal: oklch(52% 0.13 62);
+    --seal-wash: oklch(52% 0.13 62 / 0.08);
+    --granted: oklch(46% 0.1 155);
+    --granted-wash: oklch(46% 0.1 155 / 0.09);
+    --denied: oklch(48% 0.15 22);
+    --denied-wash: oklch(48% 0.15 22 / 0.09);
+
+    --t-micro: 0.6875rem;
+    --t-small: 0.8125rem;
+    --t-body: 0.9375rem;
+    --t-lead: 1.1875rem;
+    --t-title: clamp(1.5rem, 1.1rem + 1.6vw, 2.25rem);
+    --t-figure: clamp(3.25rem, 2rem + 5vw, 5.5rem);
+
+    --ma-hair: 0.25rem;
+    --ma-tight: 0.5rem;
+    --ma-close: 0.875rem;
+    --ma-block: 1.75rem;
+    --ma-section: 3.5rem;
+    --ma-chapter: 6rem;
+
+    --ease-enter: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .dark {
+    --paper: oklch(17% 0.008 70);
+    --paper-sunk: oklch(13.5% 0.008 70);
+    --paper-raised: oklch(21% 0.009 70);
+    --ink: oklch(93% 0.008 85);
+    --ink-soft: oklch(74% 0.01 85);
+    --ink-faint: oklch(56% 0.01 85);
+    --rule: oklch(93% 0.008 85 / 0.14);
+    --rule-strong: oklch(93% 0.008 85 / 0.26);
+    --seal: oklch(74% 0.12 68);
+    --seal-wash: oklch(74% 0.12 68 / 0.12);
+    --granted: oklch(72% 0.14 155);
+    --granted-wash: oklch(72% 0.14 155 / 0.12);
+    --denied: oklch(68% 0.16 25);
+    --denied-wash: oklch(68% 0.16 25 / 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: var(--ma-block) var(--ma-block) var(--ma-chapter);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, serif;
+    font-size: var(--t-body);
+    line-height: 1.6;
+  }
+
+  .wrap { max-width: 62rem; margin: 0 auto; }
+
+  .label {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: var(--t-micro);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+
+  .num {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums lining-nums slashed-zero;
+    letter-spacing: -0.01em;
+  }
+
+  h1 { font-size: var(--t-title); letter-spacing: -0.022em; line-height: 0.96;
+       margin: var(--ma-close) 0 var(--ma-block); font-weight: 600; }
+  h2 { font-size: var(--t-lead); letter-spacing: -0.018em; margin: 0 0 var(--ma-close);
+       font-weight: 600; }
+
+  section { padding-top: var(--ma-section); }
+  .sec-head { border-top: 1px solid var(--rule-strong); padding-top: var(--ma-close);
+              margin-bottom: var(--ma-block); display: flex; justify-content: space-between;
+              align-items: baseline; gap: var(--ma-close); flex-wrap: wrap; }
+
+  .note { color: var(--ink-soft); max-width: 62ch; text-wrap: pretty; }
+
+  .grid { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .cell { background: var(--paper-raised); padding: var(--ma-close); }
+
+  .swatch { height: 3.5rem; border: 1px solid var(--rule); }
+
+  .strip { padding: var(--ma-block); border: 1px solid var(--rule); }
+  .strip.light { background: oklch(97.2% 0.006 85); color: oklch(21% 0.014 65); }
+  .strip.dark-strip { background: oklch(17% 0.008 70); color: oklch(93% 0.008 85); }
+
+  .lockup { display: flex; align-items: center; gap: 0.6rem; }
+  .word { font-size: 1.5rem; letter-spacing: -0.035em; font-weight: 600; }
+
+  .seal {
+    display: inline-flex; align-items: center; gap: var(--ma-tight);
+    padding: 0.3rem 0.7rem; border-radius: 2px;
+    font-family: "IBM Plex Mono", monospace; font-size: var(--t-micro);
+    text-transform: uppercase; letter-spacing: 0.16em; font-weight: 600;
+    border: 1px solid currentColor;
+  }
+  .seal-granted { color: var(--granted); background: var(--granted-wash); }
+  .seal-denied { color: var(--denied); background: var(--denied-wash); }
+
+  .action {
+    display: inline-flex; align-items: center; gap: 0.55rem;
+    padding: 0.7rem 1.1rem; border-radius: 2px;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+    font-family: "IBM Plex Mono", monospace; font-size: var(--t-small);
+    font-weight: 500; letter-spacing: 0.02em; cursor: pointer;
+    transition: transform 140ms var(--ease-enter), opacity 140ms var(--ease-enter);
+  }
+  .action:hover { opacity: 0.86; }
+  .action:active { transform: scale(0.97); }
+  .action-quiet { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
+
+  .field {
+    width: 100%; background: var(--paper); border: 1px solid var(--rule-strong);
+    border-radius: 2px; padding: 0.7rem 0.85rem; color: var(--ink);
+    font-family: "IBM Plex Mono", monospace; font-size: var(--t-small);
+  }
+
+  .meter { position: relative; height: 3px; background: var(--rule); overflow: hidden; }
+  .meter-fill { position: absolute; inset: 0; transform-origin: left;
+                transform: scaleX(var(--fill)); background: var(--ink-soft); }
+
+  .spacer { background: var(--seal-wash); border-left: 2px solid var(--seal); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: var(--ma-tight) var(--ma-close) var(--ma-tight) 0;
+           border-top: 1px solid var(--rule); vertical-align: baseline; }
+  th { font-family: "IBM Plex Mono", monospace; font-size: var(--t-micro);
+       text-transform: uppercase; letter-spacing: 0.14em; color: var(--ink-faint);
+       font-weight: 500; border-top: 0; }
+  td.n { text-align: right; }
+
+  .ban { color: var(--denied); }
+  .ok { color: var(--granted); }
+</style>
+
+<div class="wrap">
+
+  <p class="label">Remand · Sistema de diseño</p>
+  <h1>Acta judicial técnica</h1>
+  <p class="note">
+    La dirección es un registro de tribunal, no una landing de DeFi. Papel tibio, pauta de líneas
+    finas, numeración de expediente y cifras alineadas en columna. El nombre es un término legal
+    y la interfaz se comporta en consecuencia. El detalle memorable es la tabla del fallo, que
+    publica la aritmética completa en vez del resultado.
+  </p>
+
+  <!-- ─────────────────────────────────────────────────────── LOGO -->
+  <section>
+    <div class="sec-head"><h2>Marca</h2><span class="label">Opción B · monograma</span></div>
+
+    <p class="note" style="margin-bottom: var(--ma-block)">
+      Una R construida con ángulos rectos, donde el contador es un cuadrado en lugar de una curva,
+      porque la evidencia es un bloque de datos. Las dos marcas de la derecha son el corte de
+      expediente. Usa <code class="num">currentColor</code>, así que hereda el color del contexto y
+      no necesita versiones separadas.
+    </p>
+
+    <div style="display:grid; gap:var(--ma-close); grid-template-columns:repeat(auto-fit,minmax(19rem,1fr))">
+      <div class="strip light">
+        <p class="label" style="margin:0 0 var(--ma-close)">Sobre papel</p>
+        <div class="lockup">
+          <svg width="40" height="40" viewBox="0 0 64 64" fill="none" aria-label="Remand">
+            <path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+          </svg>
+          <span class="word">Remand</span>
+        </div>
+      </div>
+
+      <div class="strip dark-strip">
+        <p class="label" style="margin:0 0 var(--ma-close)">Sobre tinta</p>
+        <div class="lockup">
+          <svg width="40" height="40" viewBox="0 0 64 64" fill="none" aria-label="Remand">
+            <path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+            <path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+          </svg>
+          <span class="word">Remand</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="strip" style="margin-top:var(--ma-close); display:flex; gap:var(--ma-block); align-items:flex-end; flex-wrap:wrap">
+      <div>
+        <p class="label" style="margin:0 0 var(--ma-close)">Tamaños mínimos</p>
+        <div style="display:flex; gap:var(--ma-block); align-items:flex-end">
+          <figure style="margin:0; text-align:center">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/></svg>
+            <figcaption class="label">64</figcaption>
+          </figure>
+          <figure style="margin:0; text-align:center">
+            <svg width="32" height="32" viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/></svg>
+            <figcaption class="label">32</figcaption>
+          </figure>
+          <figure style="margin:0; text-align:center">
+            <svg width="16" height="16" viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/></svg>
+            <figcaption class="label">16</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div>
+        <p class="label" style="margin:0 0 var(--ma-close)">Avatar</p>
+        <div style="display:flex; gap:var(--ma-close); align-items:center">
+          <div style="width:56px;height:56px;background:oklch(17% 0.008 70);color:oklch(93% 0.008 85);display:grid;place-items:center;border-radius:2px">
+            <svg width="34" height="34" viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/></svg>
+          </div>
+          <div style="width:56px;height:56px;background:oklch(97.2% 0.006 85);color:oklch(21% 0.014 65);display:grid;place-items:center;border-radius:2px;border:1px solid var(--rule)">
+            <svg width="34" height="34" viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M14 10 H42 V32 H14" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M32 32 L50 54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 14 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M46 22 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="note" style="margin-top:var(--ma-close); font-size:var(--t-small)">
+      Aire de respeto: media altura del símbolo por cada lado. Distancia al texto: 0,6rem. Nunca
+      rotarlo, inclinarlo, rellenarlo ni aplicarle sombra.
+    </p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── COLOR -->
+  <section>
+    <div class="sec-head"><h2>Color</h2><span class="label">OKLCH · hex calculado por el navegador</span></div>
+
+    <p class="note" style="margin-bottom: var(--ma-block)">
+      Una sola familia de grises, tintada en cálido de forma consistente. Nunca negro ni blanco
+      puros. Un acento único, el ocre de sello, que debe cubrir menos del 5% de los píxeles. Los
+      colores semánticos aparecen solo en el resultado del fallo.
+    </p>
+
+    <p class="label" style="margin-bottom: var(--ma-tight)">Claro</p>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))" id="light-swatches"></div>
+
+    <p class="label" style="margin:var(--ma-block) 0 var(--ma-tight)">Oscuro</p>
+    <div class="dark grid" style="grid-template-columns:repeat(auto-fit,minmax(10rem,1fr))" id="dark-swatches"></div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── TIPOGRAFÍA -->
+  <section>
+    <div class="sec-head"><h2>Tipografía</h2><span class="label">Newsreader · IBM Plex Mono</span></div>
+
+    <p class="note" style="margin-bottom: var(--ma-block)">
+      Newsreader lleva la voz del acta. Tiene eje de tamaño óptico, así que se comporta distinto en
+      un titular que en un párrafo. IBM Plex Mono se reserva para toda cifra que se compare en
+      columna, con figuras tabulares y cero cortado. Inter, Roboto y las fuentes del sistema quedan
+      fuera a propósito: son la firma tipográfica del output generado.
+    </p>
+
+    <div class="cell" style="border:1px solid var(--rule)">
+      <p class="label">Figura · 88px · tracking -0.04em · tabular</p>
+      <p class="num" style="font-size:var(--t-figure); line-height:0.86; letter-spacing:-0.04em; margin:var(--ma-tight) 0 var(--ma-block); font-weight:500">63.75<span style="font-size:0.28em">%</span></p>
+
+      <p class="label">Título · tracking -0.022em · line-height 0.94</p>
+      <p style="font-size:var(--t-title); letter-spacing:-0.022em; line-height:0.94; margin:var(--ma-tight) 0 var(--ma-block); font-weight:600">La segunda instancia del crédito on-chain</p>
+
+      <p class="label">Cuerpo · 15px · line-height 1.6</p>
+      <p style="margin:var(--ma-tight) 0 var(--ma-block); max-width:62ch">El fallo se calcula dentro del contrato y queda escrito con su desglose completo, de modo que reproducirlo no exige confiar en nadie.</p>
+
+      <p class="label">Etiqueta de campo · 11px · tracking 0.14em · versalitas</p>
+      <p class="label" style="margin-top:var(--ma-tight)">Colateral exigido tras el recálculo</p>
+    </div>
+
+    <table style="margin-top:var(--ma-block)">
+      <thead><tr><th>Token</th><th>Tamaño</th><th>Uso</th></tr></thead>
+      <tbody>
+        <tr><td class="num">--t-micro</td><td class="num n">11px</td><td>Etiquetas y notas al pie</td></tr>
+        <tr><td class="num">--t-small</td><td class="num n">13px</td><td>Datos secundarios, controles</td></tr>
+        <tr><td class="num">--t-body</td><td class="num n">15px</td><td>Texto corrido</td></tr>
+        <tr><td class="num">--t-lead</td><td class="num n">19px</td><td>Cifras de segundo nivel</td></tr>
+        <tr><td class="num">--t-title</td><td class="num n">24 a 36px</td><td>Titulares</td></tr>
+        <tr><td class="num">--t-figure</td><td class="num n">52 a 88px</td><td>Cifra protagonista</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:var(--ma-close); font-size:var(--t-small)">
+      Ratio de 8x entre la etiqueta y la cifra protagonista dentro del mismo bloque. La jerarquía se
+      resuelve por escala, nunca por tres tamaños parecidos en semibold.
+    </p>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── ESPACIADO -->
+  <section>
+    <div class="sec-head"><h2>Espaciado</h2><span class="label">Ratio 1:24 entre el menor y el mayor</span></div>
+    <p class="note" style="margin-bottom: var(--ma-block)">
+      El espacio es un elemento de composición, no relleno. Se agrupa apretado y se separa mucho.
+      Si todo el espaciado viviera entre 8 y 48 píxeles, la pantalla se sentiría uniforme.
+    </p>
+    <div id="spacing"></div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── COMPONENTES -->
+  <section>
+    <div class="sec-head"><h2>Componentes</h2><span class="label">Radio 2 a 3px · sin sombras duras</span></div>
+
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))">
+      <div class="cell">
+        <p class="label" style="margin-bottom:var(--ma-close)">Sellos del fallo</p>
+        <div style="display:grid; gap:var(--ma-tight); justify-items:start">
+          <span class="seal seal-granted">Apelación concedida</span>
+          <span class="seal seal-denied">Apelación denegada</span>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="label" style="margin-bottom:var(--ma-close)">Acciones</p>
+        <div style="display:flex; gap:var(--ma-tight); flex-wrap:wrap">
+          <button class="action">Reunir evidencia</button>
+          <button class="action action-quiet">Verificar</button>
+        </div>
+      </div>
+
+      <div class="cell">
+        <p class="label" style="margin-bottom:var(--ma-close)">Campo</p>
+        <input class="field" value="0x39c7e5be…89e92" readonly>
+      </div>
+
+      <div class="cell">
+        <p class="label" style="margin-bottom:var(--ma-close)">Medidor de dimensión</p>
+        <div style="display:grid; gap:var(--ma-close)">
+          <div><p class="num" style="font-size:var(--t-small)">100.00%</p><div class="meter"><span class="meter-fill" style="--fill:1"></span></div></div>
+          <div><p class="num" style="font-size:var(--t-small)">33.34%</p><div class="meter"><span class="meter-fill" style="--fill:0.3334"></span></div></div>
+          <div><p class="num" style="font-size:var(--t-small)">10.00%</p><div class="meter"><span class="meter-fill" style="--fill:0.1"></span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────── MOTION E ICONOS -->
+  <section>
+    <div class="sec-head"><h2>Motion e iconografía</h2><span class="label">Bajo 300ms · Phosphor Light</span></div>
+    <table>
+      <thead><tr><th>Regla</th><th>Valor</th></tr></thead>
+      <tbody>
+        <tr><td>Micro-interacción</td><td class="num">100 a 150ms</td></tr>
+        <tr><td>Entrada de bloque</td><td class="num">260ms, escalonada cada 60ms</td></tr>
+        <tr><td>Entrada de fila</td><td class="num">30ms por fila, tope de 8</td></tr>
+        <tr><td>Barra de dimensión</td><td class="num">scaleX, 520ms, escalonada cada 70ms</td></tr>
+        <tr><td>Easing de entrada</td><td class="num">cubic-bezier(0.23, 1, 0.32, 1)</td></tr>
+        <tr><td>Pulsación</td><td class="num">scale(0.97)</td></tr>
+        <tr><td>Propiedades animables</td><td class="num ok">transform, opacity</td></tr>
+        <tr><td>Propiedades prohibidas</td><td class="num ban">width, height, top, left, padding</td></tr>
+        <tr><td>Movimiento reducido</td><td class="num">prefers-reduced-motion cubierto</td></tr>
+        <tr><td>Iconos</td><td class="num">Phosphor Light, un solo grosor</td></tr>
+        <tr><td>Emojis</td><td class="num ban">nunca</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<script>
+  const TOKENS = [
+    ["--paper", "Papel", "Fondo base"],
+    ["--paper-sunk", "Papel hundido", "Superficie rebajada"],
+    ["--paper-raised", "Papel elevado", "Hoja del expediente"],
+    ["--ink", "Tinta", "Texto principal"],
+    ["--ink-soft", "Tinta suave", "Texto de apoyo"],
+    ["--ink-faint", "Tinta tenue", "Etiquetas"],
+    ["--seal", "Sello", "Acento único"],
+    ["--granted", "Concedido", "Fallo favorable"],
+    ["--denied", "Denegado", "Fallo adverso"],
+  ];
+
+  function toHex(color) {
+    const m = color.match(/[\d.]+/g);
+    if (!m) return color;
+    const [r, g, b] = m.map(Number);
+    const h = n => Math.round(n).toString(16).padStart(2, "0");
+    return "#" + h(r) + h(g) + h(b);
+  }
+
+  function paint(containerId, dark) {
+    const host = document.getElementById(containerId);
+    const probe = document.createElement("div");
+    if (dark) probe.className = "dark";
+    document.body.appendChild(probe);
+
+    for (const [token, name, use] of TOKENS) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+
+      const sw = document.createElement("div");
+      sw.className = "swatch";
+      sw.style.background = `var(${token})`;
+      probe.appendChild(sw);
+      const hex = toHex(getComputedStyle(sw).backgroundColor);
+
+      cell.innerHTML = `<p class="label">${name}</p>`;
+      cell.appendChild(sw);
+      cell.insertAdjacentHTML("beforeend",
+        `<p class="num" style="font-size:var(--t-micro);margin:var(--ma-tight) 0 0">${hex}</p>
+         <p class="num" style="font-size:var(--t-micro);color:var(--ink-faint);margin:0">${token}</p>
+         <p style="font-size:var(--t-micro);color:var(--ink-faint);margin:var(--ma-hair) 0 0">${use}</p>`);
+      host.appendChild(cell);
+    }
+    probe.remove();
+  }
+
+  paint("light-swatches", false);
+  paint("dark-swatches", true);
+
+  const MA = [
+    ["--ma-hair", "Interior de una cifra y su unidad"],
+    ["--ma-tight", "Etiqueta y su dato"],
+    ["--ma-close", "Elementos de un mismo grupo"],
+    ["--ma-block", "Bloques dentro de una sección"],
+    ["--ma-section", "Entre secciones"],
+    ["--ma-chapter", "Cierre de página"],
+  ];
+
+  const sp = document.getElementById("spacing");
+  const probe = document.createElement("div");
+  document.body.appendChild(probe);
+  for (const [token, use] of MA) {
+    const bar = document.createElement("div");
+    bar.style.height = `var(${token})`;
+    probe.appendChild(bar);
+    const px = getComputedStyle(bar).height;
+    bar.remove();
+
+    const row = document.createElement("div");
+    row.style.cssText = "display:grid;grid-template-columns:9rem 5rem 1fr;gap:var(--ma-close);align-items:center;border-top:1px solid var(--rule);padding:var(--ma-tight) 0";
+    row.innerHTML =
+      `<span class="num" style="font-size:var(--t-small)">${token}</span>
+       <span class="num" style="font-size:var(--t-small);text-align:right">${px}</span>
+       <span class="spacer" style="height:${px};display:block" title="${use}"></span>`;
+    sp.appendChild(row);
+
+    const caption = document.createElement("p");
+    caption.style.cssText = "font-size:var(--t-micro);color:var(--ink-faint);margin:0 0 var(--ma-tight) 14.5rem";
+    caption.textContent = use;
+    sp.appendChild(caption);
+  }
+  probe.remove();
+</script>

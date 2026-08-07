@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { BackGround } from "./Background";
 import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -15,14 +16,33 @@ import { useTargetNetwork } from "~~/hooks/scaffold-eth";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { arbitrumNitro, initBurnerPK } from "~~/utils/scaffold-stylus";
 
+/**
+ * Rutas de herramienta que trae Scaffold-Stylus. Conservan su propio armazon,
+ * que es util para depurar el contrato. Las rutas del producto no: Remand tiene
+ * su propia cabecera y su propio pie, y montar los dos sistemas encima
+ * rompe la direccion de diseno y duplica la navegacion.
+ */
+const RUTAS_DE_HERRAMIENTA = ["/debug", "/blockexplorer"];
+
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   const { targetNetwork } = useTargetNetwork();
+  const pathname = usePathname();
+  const esHerramienta = RUTAS_DE_HERRAMIENTA.some(ruta => pathname?.startsWith(ruta));
 
   useEffect(() => {
     if (targetNetwork.id === arbitrumNitro.id) {
       initBurnerPK();
     }
   }, [targetNetwork]);
+
+  if (!esHerramienta) {
+    return (
+      <>
+        {children}
+        <Toaster />
+      </>
+    );
+  }
 
   return (
     <>

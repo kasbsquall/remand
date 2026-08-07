@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Remand">
+  <title>Remand · Devolución</title>
+  <!-- Instancia superior: la que dictó el rechazo. Línea completa. -->
+  <path d="M10 15 H54" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+  <!-- El caso baja, gira y vuelve: eso es un remand. -->
+  <path d="M46 22 V34 a8 8 0 0 1 -8 8 H22" stroke="currentColor" stroke-width="4" stroke-linejoin="round" stroke-linecap="butt"/>
+  <!-- Punta de la devolución. -->
+  <path d="M29 35 L22 42 L29 49" stroke="currentColor" stroke-width="4" stroke-linejoin="round" stroke-linecap="butt"/>
+  <!-- Instancia inferior: queda abierta, el caso sigue vivo. -->
+  <path d="M10 57 H34" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>
+</svg>
