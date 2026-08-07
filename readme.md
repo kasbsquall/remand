@@ -1,304 +1,196 @@
+<div align="center">
+
+<img src="packages/nextjs/public/remand-mark.svg" width="72" alt="">
+
 # Remand
 
-<h4 align="center">
-  <a href="https://arb-stylus.github.io/scaffold-stylus-docs/">Documentation</a> |
-  <a href="https://scaffoldstylus.quantum3labs.com/">Website</a>
-</h4>
+**La segunda instancia del crédito on-chain**
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Arbitrum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+Si te niegan un préstamo, tu caso se reabre con evidencia y el fallo se recalcula
+dentro de un contrato en Arbitrum. Verificable por cualquiera.
 
-⚙️ Built using Rust, NextJS, RainbowKit, Stylus, Wagmi, Viem, and TypeScript.
+[Demo en vivo](https://remand.107-172-6-206.sslip.io) ·
+[Contrato en Arbiscan](https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a) ·
+[Arquitectura](docs/ARCHITECTURE.md) ·
+[Contratos](docs/CONTRACTS.md)
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://arb-stylus.github.io/scaffold-stylus-docs/components)**: Collection of React hooks wrapped around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with TypeScript autocompletion.
-- 🧱 [**Components**](https://arb-stylus.github.io/scaffold-stylus-docs/hooks): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Arbitrum network.
-
-![Debug Contracts tab](./packages/nextjs/public/debug-image.png)
-
-## Requirements
-
-Before you begin, you need to install the following tools:
-
-- [Node (>= v20.18)](https://nodejs.org/en/download/)
-- Yarn ([v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
-- [Docker](https://docs.docker.com/engine/install/)
-- [Foundry Cast](https://getfoundry.sh/)
-- [Solc (Solidity compiler)](https://docs.soliditylang.org/en/latest/installing-solidity.html)
-
-> **Note: Windows Compatibility**
->
-> Scaffold-Stylus currently does not support Windows natively. If you're using Windows, we recommend:
->
-> - **Use WSL (Windows Subsystem for Linux)** - Install WSL2 and run Scaffold-Stylus within the Linux environment
-> - **Switch to Linux or macOS** - For the best development experience
->
-> For WSL setup, follow the [Microsoft WSL installation guide](https://docs.microsoft.com/en-us/windows/wsl/install).
-
-## Quickstart
-
-To get started with Scaffold-Stylus, follow the steps below:
-
-### 1. Install Stylus tools
-
-First, install Rust and Cargo:
-
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-```
-
-Check the [Rust installation guide](https://www.rust-lang.org/tools/install) for more information.
-
-Then install the Stylus CLI tools.
-
-> **⚠️ WARNING:** This project requires `cargo-stylus` version `0.10.8` and `rustc` version `1.91.0` (as pinned in `packages/stylus/contracts/rust-toolchain.toml`). Do NOT use `stylusup` to install Stylus tools, as it installs the latest versions which are incompatible with these pinned requirements.
-
-```bash
-cargo install --force --locked cargo-stylus@0.10.8
-```
-
-**Prerequisite:**
-
-- `cargo-stylus` version `0.10.8`
-- `rustc` version match with `packages/stylus/contracts/rust-toolchain.toml`
-
-Set default `toolchain` match `rust-toolchain.toml` and add the `wasm32-unknown-unknown` build target to your Rust compiler:
-
-```bash
-rustup default 1.91.0
-rustup target add wasm32-unknown-unknown --toolchain 1.91.0
-```
-
-You should now have it available as a Cargo subcommand:
-
-```bash
-cargo stylus --help
-```
-
-### 2. Create a new project (recommended)
-
-Use the interactive setup to scaffold a new project:
-
-```bash
-npx create-stylus@latest
-```
-
-Then navigate into your project directory:
-
-```bash
-cd <project-name>
-yarn install
-# Initialize submodules (required for Nitro dev node)
-git submodule update --init --recursive
-```
-
-### 3. Clone this repo & install dependencies (alternative)
-
-```bash
-git clone https://github.com/Arb-Stylus/scaffold-stylus.git
-cd scaffold-stylus
-yarn install
-# Initialize submodules (required for Nitro dev node)
-git submodule update --init --recursive
-```
-
-### 4. Run a local network
-
-In your first terminal:
-
-```bash
-yarn chain
-```
-
-This command starts a local Stylus-compatible network using the Nitro dev node script (`./nitro-devnode/run-dev-node.sh`). The network runs on your local machine and can be used for testing and development. You can customize the Nitro dev node configuration in the `nitro-devnode` submodule.
-
-### 5. Deploy the test contract
-
-In your second terminal:
-
-```bash
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/stylus/contracts/your-contract/src` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/stylus/scripts` to deploy the contract to the network. You can also customize the deploy script .
-
-### 6. Start your NextJS app
-
-In your third terminal:
-
-```bash
-yarn start
-```
-
-Visit your app at: `http://localhost:3000`. You can interact with your smart contract using the **Debug Contracts** page, which provides a user-friendly interface for testing your contract's functions and viewing its state.
-
-### 7. Test your smart contract
-
-```bash
-yarn stylus:test
-```
-
-## Development Workflow
-
-- Edit your smart contract `lib.rs` in `packages/stylus/contracts/your-contract/src`
-- Edit your frontend in `packages/nextjs/app`
-- Edit your deployment scripts in `packages/stylus/scripts`
-
-## Create Your Own Contract
-
-Scaffold-Stylus enables you to create and deploy multiple contracts within a single project. Follow the steps below to create and deploy your own contracts.
-
-### Step 1: Generate New Contract
-
-Use the following command to create a new contract and customize it as needed:
-
-```bash
-yarn new-module <contract-name>
-```
-
-The generated contract will be located in `packages/stylus/contracts/<contract-name>`.
-
-**Workspace structure:** `packages/stylus/contracts` is a Cargo workspace with `members = ["*"]`. `yarn new-module <name>` (via `scripts/new_module.sh`) scaffolds the new contract under `contracts/` — the glob auto-discovers it, no manual wiring needed.
-
-### Step 2: Validate Your Contract Before Deployment
-
-Before deploying, it's recommended to validate your contract size using `cargo stylus check`:
-
-```bash
-cd packages/stylus/contracts/<contract-name>
-cargo stylus check
-```
-
-This command performs several important checks:
-
-- **Contract size validation**: Ensures your contract doesn't exceed size limitations
-- **WASM compilation**: Verifies your Rust code compiles to WebAssembly
-- **Deployment hash computation**: Calculates the deployment hash
-- **WASM data fee estimation**: Estimates the cost of deploying your contract
-
-**Contract Size Indicators:**
-
-- 🔴 **Red indicator**: Contract size exceeds limitations - **DO NOT DEPLOY**
-- 🟡 **Yellow/🟢 Green indicator**: Contract size within acceptable limits - **OK to deploy**
-
-> **Important:** When using constructors, error logs from constructor execution may not be visible. Consider using `initialize()` functions instead for better error visibility.
-
-### Step 3: Deploy Your Contract
-
-```bash
-yarn deploy [...options]
-```
-
-This command runs the `deploy.ts` script located in `packages/stylus/scripts`. You can customize this script with your deployment logic.
-
-**Available Options:**
-
-- `--network <network>`: Specify which network to deploy to
-- `--estimate-gas`: Only perform gas estimation without deploying
-- `--max-fee=<maxFee>`: Set maximum fee per gas in gwei
-
-**Note:** Deployment information is automatically saved in `packages/stylus/deployments` by default.
-
-## Deploying to Other Networks
-
-To deploy your contracts to other networks (other than the default local Nitro dev node), you'll need to configure your RPC endpoint and wallet credentials.
-
-### Prerequisites
-
-1. **Set the RPC URL**
-
-   Configure your target network's RPC endpoint using the proper `RPC_URL_<network>` environment variable. You can set this in your shell or create a `.env` file (see `.env.example` for reference):
-
-   ```env
-   RPC_URL_SEPOLIA=https://your-network-rpc-url
-   ```
-
-   **Note:** If RPC URL is not provided, system will use default public RPC URL from that network
-
-2. **Set the Private Key**
-
-   For real deployments, you must provide your own wallet's private key. Set the `PRIVATE_KEY_<network>` environment variable:
-
-   ```env
-   PRIVATE_KEY_SEPOLIA=your_private_key_here
-   ```
-
-   **Security Note:** A development key is used by default when running the Nitro dev node locally, but for external deployments, you must provide your own private key.
-
-3. **Set the Account Address**
-
-   Set the `ACCOUNT_ADDRESS_<network>`
-
-   ```env
-   ACCOUNT_ADDRESS_SEPOLIA=your_account_address_here
-   ```
-
-4. **Update Frontend Configuration**
-
-   Open `packages/nextjs/scaffold.config.ts` and update the `targetNetworks` array to include your target chain. This ensures your frontend connects to the correct network and generates the proper ABI in `deployedContracts.ts`:
-
-   ```ts
-   import * as chains from "./utils/scaffold-stylus/supportedChains";
-   // ...
-   targetNetworks: [chains.arbitrumSepolia],
-   ```
-
-### Arbitrum Testnet Faucets (Optional)
-
-For Arbitrum testnets, you may need testnet ETH to deploy contracts. You can obtain testnet tokens from these faucets:
-
-- [Chainlink Faucet](https://faucets.chain.link/arbitrum-sepolia)
-- [QuickNode Faucet](https://faucet.quicknode.com/arbitrum/sepolia)
-- [Alchemy Faucet](https://sepoliafaucet.com/)
-
-### Available Networks
-
-This template supports Arbitrum networks only. You can test which networks are available and their RPC URLs:
-
-```bash
-yarn info:networks
-```
-
-This will show you all supported networks and their corresponding RPC endpoints.
-
-### Deploy to Other Network (Non-Orbit Chains)
-
-Once configured, deploy to your target network:
-
-```bash
-yarn deploy --network <network>
-```
-
-**Important Security Notes:**
-
-- The values in `.env.example` provide a template for required environment variables
-- **Always keep your private key secure and never commit it to version control**
-- Consider using environment variable management tools for production deployments
-
-### Deploy to Orbit Chains
-
-Visit our [Deploy to Orbit chain documentation](https://arb-stylus.github.io/scaffold-stylus-docs/deploying/deploy-to-orbit-chains) for detailed guide
-
-## Verify your contract (Highly Experimental)
-
-Visit our [Verify section](https://arb-stylus.github.io/scaffold-stylus-docs/recipes/verify-contract-custom-chain)
-
-## 🛠️ Troubleshooting Common Issues
-
-Visit our [Troubleshooting section](https://arb-stylus.github.io/scaffold-stylus-docs/quick-start/troubleshooting)
+</div>
 
 ---
 
-## Documentation
+## El problema
 
-Visit our [docs](https://arb-stylus.github.io/scaffold-stylus-docs/) to learn how to start building with Scaffold-Stylus.
+El préstamo descentralizado exige sobrecolateralizar: para pedir prestado hay
+que depositar más valor del que recibes, habitualmente un 120% o más. Eso
+protege al protocolo y excluye a quien no tiene capital acumulado, que en Perú y
+en América Latina es la mayoría.
 
-To learn more about its features, check out our [website](https://scaffoldstylus.quantum3labs.com/).
+Ya existen protocolos que evalúan riesgo para prestar sin colateral completo.
+Spectral Finance, Cred Protocol, Credora y RociFi del lado del scoring; Maple,
+TrueFi y Goldfinch del lado institucional. **Todos comparten el mismo defecto
+estructural: el score se calcula fuera de la cadena, en un servidor privado, y
+solo se publica el resultado.** Quien recibe un rechazo no puede reproducir el
+cálculo, no sabe qué dimensión lo hundió y no tiene ante quién impugnar.
 
-## Contributing to Scaffold-Stylus
+En la banca tradicional, impugnar una decisión automatizada es un derecho
+reconocido. En finanzas descentralizadas nunca se construyó. Te niegan y se
+acabó.
 
-We welcome contributions to Scaffold-Stylus!
+## Qué hace Remand
 
-Please see [CONTRIBUTING.md](https://github.com/Arb-Stylus/scaffold-stylus/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-Stylus.
+Reabre el caso y recalcula el fallo ponderando la evidencia de comportamiento
+que la primera instancia ignoró. **El cálculo ocurre dentro de un contrato
+Stylus y el desglose completo queda escrito en la cadena.**
+
+| Dimensión | Peso | Qué mide |
+|---|---|---|
+| Historial de repago | 30% | Proporción de préstamos devueltos |
+| Consistencia de actividad | 25% | Meses con actividad sobre meses desde el inicio |
+| Antigüedad de la wallet | 20% | Tiempo operando. Satura a los dos años |
+| Ausencia de liquidaciones | 15% | Cae a cero con tres liquidaciones |
+| Diversidad de contratos | 10% | Contratos distintos usados. Satura en ocho |
+
+Umbral de aprobación: 60%. El colateral exigido interpola entre el 120% de la
+primera instancia y el 60% que obtiene un expediente impecable.
+
+## Un caso real, no de laboratorio
+
+La wallet [`0x39c7e5be…89e92`](https://arbiscan.io/address/0x39c7e5be19f99b178e38aa06f7799d517be89e92)
+es un prestatario auténtico de Aave V3 en Arbitrum One. Su evidencia recolectada:
+900 días de antigüedad, 3 de 30 meses con actividad, 3 préstamos con 3 repagos,
+2 liquidaciones y 5 contratos usados.
+
+El fallo emitido en cadena le da **63,75%** y le concede la apelación, bajando su
+colateral exigido a **81,75%**. Pasa el umbral por poco: devolvió todo lo que
+pidió y lleva 900 días operando, pero arrastra dos liquidaciones y actividad muy
+intermitente. El modelo lo penaliza por ello y no regala aprobaciones.
+
+**Reproduce ese fallo tú mismo**, sin wallet, sin gas y sin permisos:
+
+```bash
+cast call 0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a \
+  "previewVerdict(uint32,uint32,uint32,uint32,uint32,uint32,uint32)(uint32,uint32,uint32,uint32,uint32,uint32,bool,uint32)" \
+  900 3 30 3 3 2 5 \
+  --rpc-url https://sepolia-rollup.arbitrum.io/rpc
+```
+
+Devuelve `10000, 1000, 10000, 3334, 6250, 6375, true, 8175`, idéntico a lo que
+`getRuling(1)` tiene registrado en la cadena.
+
+## Por qué Arbitrum Stylus
+
+Recalcular un veredicto ponderando cinco dimensiones, con validación de
+coherencia, saturaciones e interpolación del colateral, es cómputo pesado. En
+Solidity sería caro en gas, y **esa es exactamente la razón por la que todos los
+protocolos de scoring existentes calculan fuera de la cadena**.
+
+Stylus añade a Arbitrum una segunda máquina virtual WebAssembly, coequal a la
+EVM, que ejecuta contratos en Rust con costos sustancialmente menores en
+operaciones intensivas en cómputo. Eso permite que el cálculo viva dentro del
+contrato y sea auditable.
+
+Sin Stylus, Remand tendría que confiar en un servidor privado como todos los
+protocolos que critica.
+
+| Medida | Valor |
+|---|---|
+| Tamaño del contrato | 12,2 KB de WASM |
+| Fee de activación | 0,000092 ETH |
+| Gas de una apelación completa | 112.534 |
+| Costo de reproducir un fallo | cero, es una vista |
+
+## Los agentes no deciden
+
+El Defensor construye el caso a partir de la evidencia. La Contraparte lo audita
+y expone sus debilidades, para que la apelación no sea una defensa complaciente.
+Corren en paralelo y **no se leen entre sí**: si la Contraparte viera el texto del
+Defensor tendería a rebatirlo en vez de auditar los datos.
+
+**Ninguno computa el fallo.** Si el veredicto saliera de un modelo de lenguaje,
+dos ejecuciones con la misma evidencia podrían diferir y nadie podría reproducir
+un rechazo, que es exactamente el problema que Remand denuncia.
+
+Si el modelo no está disponible, el sistema arma el expediente con un análisis
+determinista sobre los mismos números y lo declara en pantalla.
+
+## Estructura
+
+```
+packages/
+├── stylus/contracts/remand-verdict/src/
+│   ├── evidence_schema.rs     qué evidencia se acepta y cuándo se rechaza
+│   ├── verdict_engine.rs      motor determinista, función pura, 13 tests
+│   └── lib.rs                 contrato: apelaciones, fallos, vista pública
+└── nextjs/
+    ├── app/                   primera instancia, expediente, verificador
+    ├── components/remand/     armazón, acta del fallo, marca
+    ├── lib/evidence/          recolector on-chain y por indexador
+    ├── lib/agents/            Defensor y Contraparte
+    └── styles/remand.css      sistema de diseño
+```
+
+## Correr el proyecto
+
+Requiere Rust 1.91.0, `cargo-stylus` 0.10.8, Node 20 o superior y Yarn.
+
+```bash
+git clone https://github.com/kasbsquall/remand.git
+cd remand
+yarn install
+
+# tests del motor de veredicto
+cd packages/stylus/contracts/remand-verdict && cargo test
+
+# la aplicación
+yarn start
+```
+
+Para que el expediente reúna evidencia real hace falta una clave gratuita de la
+API v2 de Etherscan en `packages/nextjs/.env.local`:
+
+```
+ETHERSCAN_API_KEY=tu_clave
+ANTHROPIC_API_KEY=tu_clave   # opcional: sin ella, el análisis es determinista
+```
+
+Para desplegar el contrato, en `packages/stylus/.env`:
+
+```
+PRIVATE_KEY_SEPOLIA=0x...
+ACCOUNT_ADDRESS_SEPOLIA=0x...
+```
+
+```bash
+yarn deploy --network sepolia --contract remand-verdict
+```
+
+## Decisiones que vale la pena conocer
+
+**Aritmética entera, cero punto flotante.** Todo el motor calcula en puntos base.
+El redondeo del flotante depende del orden de las operaciones y de la
+plataforma, así que un fallo calculado con floats no sería reproducible fuera de
+la cadena.
+
+**El motor es una función pura, separada del contrato.** No lee estado, no
+consulta la hora ni sabe quién lo llama. Por eso `previewVerdict` puede exponer
+exactamente el mismo cálculo como vista gratuita: el verificador no es una
+reimplementación que podría divergir, es la misma función.
+
+**Sin historial no hay mérito.** Sin préstamos previos no puntúan ni el repago ni
+la ausencia de liquidaciones. La segunda regla la detectó un test durante el
+desarrollo, cuando una wallet recién creada obtenía 1.500 puntos base por no
+haber sido liquidada nunca.
+
+**Lo que no se puede medir se declara.** Cada dimensión viaja con su procedencia y
+los conteos truncados se marcan como tales. Un cero honesto baja el puntaje; un
+número estimado rompería la promesa de reproducibilidad.
+
+## Créditos y licencia
+
+Construido sobre [Scaffold-Stylus](https://github.com/Arb-Stylus/scaffold-stylus).
+Software de terceros documentado en [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
+
+Hackathon Ethereum Lima 2026 · Track Arbitrum · bounty Advanced.
+Kevin Soto Burgos.
+
+MIT.
