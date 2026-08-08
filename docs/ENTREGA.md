@@ -15,17 +15,22 @@ Bounty: Advanced (Scaffold-Stylus + AI)
 | Registro de fallos | https://remand.107-172-6-206.sslip.io/registro |
 | Contrato en Arbiscan | https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a |
 | Fallo asentado (transacción) | https://sepolia.arbiscan.io/tx/0x076b29b19e3d18eee39c44a7d0e93490cfe0255333634016328a7a985ecc7757 |
+| Video pitch | https://youtu.be/8-E8ES9ZZDQ |
+| Video demo | https://youtu.be/TWz0m-Wgoqw |
 | Arquitectura | [docs/ARCHITECTURE.md](ARCHITECTURE.md) |
 | Contratos | [docs/CONTRACTS.md](CONTRACTS.md) |
 | Pitch deck (PDF) | [docs/deck/remand-pitch-deck.pdf](deck/remand-pitch-deck.pdf) |
 
 ## Archivos de vídeo
 
-| Pieza | Duración | Formato |
-|---|---|---|
-| Video pitch | 2:37 | 1920×1080 · 30 fps · −15,2 LUFS |
-| Video demo | 2:15 | 1920×1080 · 30 fps · sin locución, una sola toma |
-| Miniatura | — | 1920×1080 JPG |
+| Pieza | Duración | Enlace | Formato |
+|---|---|---|---|
+| Video pitch | 2:37 | https://youtu.be/8-E8ES9ZZDQ | 1920×1080 · 30 fps · −15,2 LUFS |
+| Video demo | 2:15 | https://youtu.be/TWz0m-Wgoqw | 1920×1080 · 30 fps · sin locución, una sola toma |
+
+Los dos salen en `yuv420p` con `color_range=tv` y bt709. Sin esa conversión
+explícita los reproductores que ignoran la etiqueta expanden el rango igual y
+todo lo que pasa de 235 se quema a blanco.
 
 ---
 
