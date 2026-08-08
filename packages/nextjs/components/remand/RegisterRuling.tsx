@@ -179,8 +179,8 @@ export function RegisterRuling({ appellant, caseId, evidence, alreadyJudged }: P
                 </ConnectButton.Custom>
                 <div className="mt-[var(--ma-close)]">
                   <Aviso>
-                    Reunir la evidencia y calcular el fallo no exige firma. Asentarlo sí, y sólo puede hacerlo el dueño
-                    de la wallet apelante.
+                    Reunir la evidencia y calcular el fallo no exige firma. Asentarlo sí: alguien tiene que presentarlo,
+                    y el contrato registra quién lo hizo.
                   </Aviso>
                 </div>
               </>
