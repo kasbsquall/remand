@@ -1,9 +1,10 @@
-# Remand · Video Pitch · versión 2
+# Remand · Video Pitch · versión 3
 
 Reescrito tras el jurado simulado. Cuatro evaluadores agnósticos: ingeniero senior,
 inversor, espectador no técnico y jurado del track Arbitrum.
 
-**Runtime nominal: 2:40.** Límite del reglamento: 3:00. El margen de veinte segundos es
+**Runtime real del montaje: 2:37.7**, medido sobre `final_audio.wav`.
+**Runtime nominal del guion: 2:40.** Límite del reglamento: 3:00. El margen de veinte segundos es
 deliberado: la locución en español se estira y el corte se mide sobre el audio real, no
 sobre esta tabla.
 
@@ -12,7 +13,54 @@ sobre esta tabla.
 
 ---
 
-## Qué cambió y por qué
+## Qué cambió de la versión 2 a la 3
+
+Las dos correcciones salieron de comparar fotogramas ya renderizados contra lo
+que devuelve el contrato y contra lo que imprime la interfaz. Ninguna se ve
+leyendo el guion.
+
+### 1. La cifra del colateral estaba mal
+
+La versión 2 decía, en locución y en pantalla, que el colateral baja *de mil
+doscientos a ochocientos diez*. El contrato devuelve `8175` puntos básicos para
+este expediente, o sea **81,75%**, que sobre un préstamo de mil son **817,50**.
+El 810 no sale de ninguna parte; venía arrastrado de una versión anterior de los
+pesos y nadie lo volvió a comprobar.
+
+Es exactamente el defecto más caro que puede tener un video de esta clase: una
+cifra que la propia demo desmiente. Cuesta más que cualquier fallo de
+composición, porque a partir de ahí el jurado descuenta también las cifras que sí
+son correctas.
+
+La escena 2 pasa a decirlo en porcentaje, que es literalmente lo que imprime el
+acta: **120,00% → 81,75%**, y debajo la derivación sobre mil USDC. Se
+resintetizó esa escena de locución.
+
+### 2. La escena de Arbiscan prometía una captura que no existe
+
+El guion decía "lo mismo desde Arbiscan, que no es nuestro". Arbiscan está
+detrás de una verificación anti-bots, y saltársela no estaba sobre la mesa. La
+prueba que sí está grabada es equivalente y discutiblemente más fuerte: la misma
+llamada con `cast call` contra `sepolia-rollup.arbitrum.io`, el nodo público de
+la red, desde fuera de la aplicación. La locución pasa a nombrar eso.
+
+Arbiscan sí aparece en la escena 9, donde corresponde: la transacción de la
+firma, confirmada, en un explorador que no es nuestro.
+
+### 3. Los agentes no están configurados en la demo pública
+
+La captura del producto rotula "los agentes no están configurados en esta
+instancia", porque la instancia desplegada no lleva clave de modelo. La locución
+de la versión 2 afirmaba en presente que dos agentes trabajan el caso.
+
+En vez de tapar el rótulo, la escena 5 lo declara y lo usa: los agentes redactan
+el expediente, el fallo lo computa el contrato, y esta demo lo prueba corriendo
+sin modelo y devolviendo el mismo número. Es la tesis del video, demostrada por
+accidente.
+
+---
+
+## Qué cambió de la versión 1 a la 2
 
 | Crítica | De quién | Corrección |
 |---|---|---|
@@ -63,7 +111,7 @@ guardados. Si no los tienes, te rechazan. Y no hay a quién reclamarle."
 ### 2 · La tesis y el dinero · 0:10 → 0:26 · 16 s
 
 **Imagen.** El monograma se dibuja. Debajo, el número que importa creciendo dígito a dígito:
-**1.200 → 810**. Al costado, en pequeño: *misma wallet, mismo préstamo*.
+**120,00% → 81,75%**. Debajo, la derivación: *sobre 1.000 USDC, 817,50 en vez de 1.200,00*.
 
 **Locución.** "Remand es la segunda instancia. Reabre tu caso, mira cómo te has portado de
 verdad, y recalcula cuánto te tienen que exigir. En este expediente real, de mil doscientos
@@ -194,7 +242,7 @@ sostenidos los últimos cinco segundos.
 | Cifra | Fuente | Verificable en |
 |---|---|---|
 | 1.200 sobre 1.000 | parámetros de Aave V3 | documentación del protocolo |
-| 63,75% y 810 sobre 1.000 | `previewVerdict` con la evidencia del expediente | llamada pública al contrato |
+| 63,75% y colateral 81,75% (817,50 sobre 1.000) | `previewVerdict` con la evidencia del expediente | llamada pública al contrato |
 | 43,75% al bajar repagos a 1 | misma función, input modificado | en pantalla, escena 8 |
 | 12,2 KB | salida de `cargo stylus check` | terminal en escena 7 |
 | 900 días, 3 de 30 meses, 3 préstamos, 3 repagos, 2 liquidaciones, 5 contratos | recolector sobre `0x39c7e5be` | Arbiscan |
