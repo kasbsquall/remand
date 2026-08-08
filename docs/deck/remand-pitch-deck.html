@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Remand · La segunda instancia del crédito on-chain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#211f1c; --paper-sunk:#1a1815; --paper-raised:#292723;
+    --ink:#eae5dc; --ink-soft:#b9b2a6; --ink-faint:#9a9387;
+    --rule:rgba(234,229,220,.14); --rule-strong:rgba(234,229,220,.26);
+    --seal:#d79b5e; --seal-deep:#e7bb8a; --deny:#c96a52;
+    --ink2:#7fa6cc; --ink2-hair:rgba(127,166,204,.22);
+
+    --ma-hair:.25rem; --ma-close:.75rem; --ma-block:2rem;
+    --ma-section:4.5rem; --ma-chapter:9rem;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:var(--paper-sunk);color:var(--ink);
+       font-family:"Newsreader",Georgia,serif;font-size:19px;line-height:1.5}
+
+  @page{size:1600px 900px;margin:0}
+  @media print{.lam::after{display:none}}
+
+  .lam{width:1600px;height:900px;position:relative;overflow:hidden;
+       background:var(--paper-sunk);page-break-after:always;
+       padding:78px 96px;display:flex;flex-direction:column}
+  .lam:last-child{page-break-after:auto}
+
+  /* Grano: una superficie plana perfecta lee como render, no como impreso. */
+  .lam::after{content:"";position:absolute;inset:0;pointer-events:none;
+      opacity:.05;mix-blend-mode:overlay;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/><feColorMatrix type='saturate' values='0'/></filter><rect width='240' height='240' filter='url(%23n)'/></svg>")}
+
+  .marca{position:absolute;top:44px;left:96px;display:flex;align-items:center;gap:14px}
+  .marca svg{width:26px;height:26px}
+  .marca span{font-family:"IBM Plex Mono",monospace;font-size:12px;
+              letter-spacing:.26em;text-transform:uppercase;color:var(--ink-faint)}
+  .folio{position:absolute;top:46px;right:96px;font-family:"IBM Plex Mono",monospace;
+         font-size:12px;letter-spacing:.2em;color:var(--ink-faint);
+         font-variant-numeric:tabular-nums}
+  .fuente{position:absolute;bottom:40px;left:96px;right:96px;
+          font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+          letter-spacing:.06em;color:var(--ink-faint);
+          border-top:1px solid var(--rule);padding-top:12px}
+
+  .rotulo{font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.22em;
+          text-transform:uppercase;color:var(--ink-faint)}
+  .rotulo.acento{color:var(--seal)}
+
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-variation-settings:"opsz" 96;
+     font-size:88px;line-height:.98;letter-spacing:-.034em;font-weight:500;
+     text-wrap:balance}
+  h2{font-family:"Bricolage Grotesque",sans-serif;font-variation-settings:"opsz" 72;
+     font-size:56px;line-height:1.02;letter-spacing:-.028em;font-weight:500;
+     text-wrap:balance}
+  p{color:var(--ink-soft);max-width:62ch;text-wrap:pretty}
+  .mono{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums slashed-zero}
+
+  .cifra{font-family:"Bricolage Grotesque",sans-serif;font-variation-settings:"opsz" 96;
+         font-variant-numeric:tabular-nums lining-nums slashed-zero;
+         font-size:132px;line-height:.86;letter-spacing:-.04em;font-weight:600}
+  .cifra.chica{font-size:64px;letter-spacing:-.03em}
+  .cifra .u{font-size:.36em;color:var(--ink-faint);margin-left:.12em}
+
+  .fila{display:flex;gap:var(--ma-section)}
+  .col{flex:1}
+  .sep{width:1px;background:var(--rule-strong);align-self:stretch}
+
+  table{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",monospace;
+        font-size:15px;font-variant-numeric:tabular-nums slashed-zero}
+  th{text-align:left;font-weight:500;font-size:11.5px;letter-spacing:.18em;
+     text-transform:uppercase;color:var(--ink-faint);padding:0 0 12px;
+     border-bottom:1px solid var(--rule-strong)}
+  td{padding:13px 0;border-bottom:1px solid var(--rule);color:var(--ink-soft)}
+  td.n{text-align:right;color:var(--ink);font-weight:500}
+  tr.total td{border-bottom:none;padding-top:18px;color:var(--ink);font-size:19px}
+  tr.total td.n{color:var(--seal);font-size:26px}
+
+  .sello{display:inline-block;border:4px solid var(--seal);padding:8px 22px;
+         font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:26px;
+         letter-spacing:.13em;color:var(--seal);transform:rotate(-4deg);
+         box-shadow:inset 0 0 0 2px var(--paper-sunk),inset 0 0 0 3px var(--seal)}
+  .sello.no{border-color:var(--deny);color:var(--deny);
+            box-shadow:inset 0 0 0 2px var(--paper-sunk),inset 0 0 0 3px var(--deny)}
+
+  .term{background:#151310;border:1px solid var(--rule);padding:24px 26px;
+        font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.8;
+        color:var(--ink-soft);font-variant-numeric:tabular-nums;
+        white-space:nowrap;overflow:hidden}
+  .term .cmd{color:var(--ink)}
+  .term .ok{color:var(--seal)}
+  .term .inf{color:var(--ink2)}
+
+  .caja{border:1px solid var(--rule);padding:26px 30px;background:rgba(255,255,255,.016)}
+  .caja .rotulo{margin-bottom:14px}
+
+  ul{list-style:none}
+  li{display:flex;gap:14px;align-items:baseline;margin-bottom:14px;color:var(--ink-soft)}
+  li::before{content:"";width:14px;height:1px;background:var(--seal);flex:none;
+             transform:translateY(-5px)}
+
+  .guil{position:absolute;pointer-events:none;opacity:.3}
+</style>
+</head>
+<body>
+
+<!-- ============================================ 01 · portada -->
+<section class="lam" style="justify-content:center;align-items:center;text-align:center">
+  <svg class="guil" style="width:1180px;height:1180px;left:210px;top:-140px" viewBox="0 0 1180 1180" fill="none" id="g1"></svg>
+  <svg width="132" height="132" viewBox="0 0 64 64" fill="none" style="margin-bottom:30px">
+    <path d="M14 10 V54" stroke="#eae5dc" stroke-width="6" stroke-linecap="square"/>
+    <path d="M14 10 H40 V32 H14" stroke="#eae5dc" stroke-width="6" stroke-linecap="square"/>
+    <path d="M30 32 L50 54" stroke="#eae5dc" stroke-width="6" stroke-linecap="square"/>
+    <path d="M47 12 H58" stroke="#eae5dc" stroke-width="6"/>
+    <path d="M47 24 H58" stroke="#eae5dc" stroke-width="6"/>
+  </svg>
+  <div style="font-family:'Bricolage Grotesque';font-size:60px;letter-spacing:.28em;
+              text-indent:.28em;font-weight:500;margin-bottom:34px">REMAND</div>
+  <h1 style="max-width:19ch">La segunda instancia<br>del crédito on-chain</h1>
+  <p style="margin-top:30px;font-size:22px;max-width:56ch">
+    Cuando un préstamo se rechaza, el caso se reabre, se reúne la evidencia de lo que la
+    wallet hizo de verdad, y un contrato en Arbitrum recalcula el fallo delante de quien
+    quiera comprobarlo.
+  </p>
+  <div class="mono" style="margin-top:46px;font-size:15px;color:var(--seal);letter-spacing:.05em">
+    Hackathon Ethereum Lima 2026 · track Arbitrum · Scaffold-Stylus + AI
+  </div>
+</section>
+
+<!-- ============================================ 02 · el problema -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">02 · EL PROBLEMA</div>
+
+  <div style="margin-top:64px">
+    <div class="rotulo">Para recibir 1.000 USDC prestados</div>
+    <h2 style="margin-top:20px;max-width:20ch">Tienes que dejar 1.200 guardados. Si no los tienes, te rechazan.</h2>
+  </div>
+
+  <div class="fila" style="margin-top:64px;align-items:flex-end">
+    <div class="col">
+      <div class="rotulo">Recibes</div>
+      <div class="cifra" style="color:var(--ink-soft);margin-top:14px">1.000<span class="u">USDC</span></div>
+    </div>
+    <div class="sep"></div>
+    <div class="col">
+      <div class="rotulo acento">Queda inmovilizado</div>
+      <div class="cifra" style="color:var(--seal);margin-top:14px">1.200<span class="u">USDC</span></div>
+    </div>
+    <div class="sep"></div>
+    <div class="col" style="padding-bottom:6px">
+      <ul style="font-size:18px">
+        <li>No pondera si devolviste lo que pediste</li>
+        <li>No pondera hace cuánto operas</li>
+        <li>No hay instancia donde reclamar</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Parámetros de Aave V3 en Arbitrum · el ratio depende del colateral, 1.200 sobre 1.000
+    corresponde a un LTV del 83%
+  </div>
+</section>
+
+<!-- ============================================ 03 · por qué no se puede reclamar -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">03 · POR QUÉ HOY NO SE PUEDE RECLAMAR</div>
+
+  <div style="margin-top:64px">
+    <div class="rotulo">Ya hay quien puntúa wallets</div>
+    <h2 style="margin-top:20px;max-width:26ch">El puntaje se computa en un servidor privado. Solo se publica el resultado.</h2>
+  </div>
+
+  <div class="fila" style="margin-top:56px">
+    <div class="col">
+      <table>
+        <thead><tr><th>Quien puntúa</th><th>Producto</th><th style="text-align:right">Cómputo</th></tr></thead>
+        <tbody>
+          <tr><td>Spectral Finance</td><td>MACRO Score</td><td class="n">fuera de cadena</td></tr>
+          <tr><td>Cred Protocol</td><td>Credit Score</td><td class="n">fuera de cadena</td></tr>
+          <tr><td>RociFi</td><td>Credit NFT</td><td class="n">fuera de cadena</td></tr>
+          <tr class="total"><td>Remand</td><td>Fallo del expediente</td><td class="n">en el contrato</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col" style="max-width:440px">
+      <div class="caja">
+        <div class="rotulo">Lo que eso significa</div>
+        <ul style="font-size:17px;margin-top:6px">
+          <li>No puedes rehacer la cuenta</li>
+          <li>No puedes discutir el resultado</li>
+          <li>Tienes que confiar en quien lo calculó</li>
+        </ul>
+      </div>
+      <p style="margin-top:26px;font-size:17px">
+        Remand no compite en el modelo. Compite en que el cálculo se pueda repetir sin pedirnos
+        permiso.
+      </p>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Clasificación por dónde ocurre el cómputo, según la documentación pública de cada
+    protocolo · ninguno expone una función on-chain que recalcule su puntaje
+  </div>
+</section>
+
+<!-- ============================================ 04 · cómo funciona -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">04 · CÓMO FUNCIONA</div>
+
+  <div style="margin-top:56px">
+    <div class="rotulo">Cuatro pasos, y el tercero es el único que dicta</div>
+    <h2 style="margin-top:20px;max-width:24ch">Los agentes redactan el expediente. El contrato dicta el fallo.</h2>
+  </div>
+
+  <div class="fila" style="margin-top:52px;gap:32px">
+    <div class="col caja">
+      <div class="rotulo acento">01 · Evidencia</div>
+      <p style="font-size:16.5px">Se lee el historial público de la wallet en Arbitrum One: préstamos, repagos,
+      antigüedad, liquidaciones y contrapartes del pool de Aave V3.</p>
+      <div class="mono" style="margin-top:16px;font-size:13px;color:var(--ink-faint)">
+        Etherscan v2 · chainid 42161</div>
+    </div>
+    <div class="col caja">
+      <div class="rotulo acento">02 · Alegatos</div>
+      <p style="font-size:16.5px">Un agente defensor construye el caso, un agente contraparte lo audita y lo
+      cuestiona. Ninguno de los dos decide.</p>
+      <div class="mono" style="margin-top:16px;font-size:13px;color:var(--ink-faint)">
+        claude-sonnet-5 · con respaldo determinista</div>
+    </div>
+    <div class="col caja" style="border-color:var(--seal);background:rgba(215,155,94,.05)">
+      <div class="rotulo acento">03 · Fallo</div>
+      <p style="font-size:16.5px">Siete números entran a una función pura en Rust. Cinco dimensiones con su peso,
+      aritmética entera, sin coma flotante y sin reloj.</p>
+      <div class="mono" style="margin-top:16px;font-size:13px;color:var(--seal)">
+        Arbitrum Stylus · previewVerdict</div>
+    </div>
+    <div class="col caja">
+      <div class="rotulo acento">04 · Asiento</div>
+      <p style="font-size:16.5px">Quien presenta el expediente lo firma y el fallo queda escrito con su desglose
+      completo. A partir de ahí no depende de nosotros.</p>
+      <div class="mono" style="margin-top:16px;font-size:13px;color:var(--ink-faint)">
+        submitAppeal · getRuling</div>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Sin coma flotante en ninguna parte del motor: dos ejecuciones del mismo expediente tienen
+    que devolver el mismo entero, o la reproducibilidad no significa nada
+  </div>
+</section>
+
+<!-- ============================================ 05 · el fallo -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">05 · EL FALLO, DIMENSIÓN POR DIMENSIÓN</div>
+
+  <div class="fila" style="margin-top:80px;align-items:center">
+    <div class="col">
+      <div class="rotulo" style="margin-bottom:22px">Expediente 0x39c7e5be…e89e92</div>
+      <table>
+        <thead><tr><th>Dimensión</th><th style="text-align:right">Bruto</th><th style="text-align:right">Peso</th><th style="text-align:right">Aporte</th></tr></thead>
+        <tbody>
+          <tr><td>Historial de repago</td><td class="n">100,00</td><td class="n">30%</td><td class="n">30,00</td></tr>
+          <tr><td>Constancia de actividad</td><td class="n">10,00</td><td class="n">25%</td><td class="n">2,50</td></tr>
+          <tr><td>Antigüedad</td><td class="n">100,00</td><td class="n">20%</td><td class="n">20,00</td></tr>
+          <tr><td>Ausencia de liquidaciones</td><td class="n">33,34</td><td class="n">15%</td><td class="n">5,00</td></tr>
+          <tr><td>Diversidad de contrapartes</td><td class="n">62,50</td><td class="n">10%</td><td class="n">6,25</td></tr>
+          <tr class="total"><td>Total</td><td class="n"></td><td class="n"></td><td class="n">63,75</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="sep"></div>
+    <div class="col" style="max-width:420px;text-align:center">
+      <div class="rotulo">Puntaje del fallo</div>
+      <div class="cifra" style="margin-top:16px">63,75<span class="u">%</span></div>
+      <div class="mono" style="margin-top:14px;font-size:14px;color:var(--ink-faint)">
+        umbral de aprobación 60,00%</div>
+      <div style="margin-top:34px"><span class="sello">CONCEDIDA</span></div>
+      <div style="margin-top:44px">
+        <div class="rotulo">Colateral exigido tras el recálculo</div>
+        <div class="cifra chica" style="color:var(--seal);margin-top:12px">81,75<span class="u">%</span></div>
+        <div class="mono" style="margin-top:12px;font-size:14px;color:var(--ink-faint)">
+          antes 120,00% · sobre 1.000 USDC, 817,50 en vez de 1.200,00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Salida literal de <span class="mono">getRuling</span> sobre el expediente asentado:
+    10000 · 1000 · 10000 · 3334 · 6250 · 6375 · true · 8175, en puntos básicos
+  </div>
+</section>
+
+<!-- ============================================ 06 · la prueba -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">06 · LA PRUEBA</div>
+
+  <div style="margin-top:52px">
+    <div class="rotulo acento">Lo que ningún otro puntaje de crédito te deja hacer</div>
+    <h2 style="margin-top:18px;max-width:30ch">Cambia un dato y vuelve a preguntar. Si el número se mueve, hay aritmética adentro.</h2>
+  </div>
+
+  <div class="fila" style="margin-top:40px;gap:38px">
+    <div class="col">
+      <div class="term">
+        <div class="cmd">$ cast call $CONTRATO \</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;"previewVerdict(uint32,uint32,uint32,uint32,uint32,uint32,uint32)" \</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;900 3 30 <span class="ok">3</span> 3 2 5 \</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;--rpc-url https://sepolia-rollup.arbitrum.io/rpc</div>
+        <div style="margin-top:12px">10000 · 1000 · 10000 · 3334 · 6250</div>
+        <div><span class="ok">6375</span> &nbsp; true &nbsp; 8175</div>
+      </div>
+      <div style="margin-top:16px;text-align:center"><span class="sello" style="font-size:17px;padding:5px 16px">CONCEDIDA · 63,75%</span></div>
+    </div>
+    <div class="col">
+      <div class="term">
+        <div class="cmd">$ # mismo contrato, un solo repago en vez de tres</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;"previewVerdict(uint32,uint32,uint32,uint32,uint32,uint32,uint32)" \</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;900 3 30 <span style="color:var(--deny)">1</span> 3 2 5 \</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;--rpc-url https://sepolia-rollup.arbitrum.io/rpc</div>
+        <div style="margin-top:12px">3333 · 1000 · 10000 · 3334 · 6250</div>
+        <div><span style="color:var(--deny)">4375</span> &nbsp; false &nbsp; 9375</div>
+      </div>
+      <div style="margin-top:16px;text-align:center"><span class="sello no" style="font-size:17px;padding:5px 16px">DENEGADA · 43,75%</span></div>
+    </div>
+  </div>
+
+  <div class="fila" style="margin-top:24px;gap:52px;align-items:flex-start">
+    <div class="col">
+      <p style="font-size:17.5px">
+        <span class="mono" style="color:var(--seal)">previewVerdict</span> es una función pura:
+        no lee estado, no exige firma y no cuesta gas. Cualquiera puede ejecutarla con estos
+        datos desde su propio nodo y obtener estos mismos enteros. Un valor guardado no
+        reacciona a un input nuevo; este sí.
+      </p>
+    </div>
+    <div class="col" style="max-width:520px">
+      <div class="caja" style="padding:16px 22px">
+        <div class="rotulo">Qué dimensión se movió</div>
+        <table style="font-size:13.5px">
+          <tbody>
+            <tr><td style="padding:8px 0">Historial de repago</td><td class="n" style="color:var(--deny);padding:8px 0">100,00 → 33,33</td></tr>
+            <tr><td style="padding:8px 0">Aporte al total</td><td class="n" style="color:var(--deny);padding:8px 0">30,00 → 10,00</td></tr>
+            <tr><td style="border:none;padding:8px 0">Las otras cuatro</td><td class="n" style="border:none;padding:8px 0">sin cambio</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Ejecución real contra el nodo público de Arbitrum Sepolia · el verificador de la demo hace
+    la misma llamada desde el navegador, sin pasar por nuestro servidor
+  </div>
+</section>
+
+<!-- ============================================ 07 · stylus -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">07 · POR QUÉ ARBITRUM STYLUS</div>
+
+  <div style="margin-top:56px">
+    <div class="rotulo">Cinco dimensiones ponderadas dentro de un contrato</div>
+    <h2 style="margin-top:20px;max-width:26ch">Ese cálculo en Solidity saldría caro. Por eso todos los demás lo hacen fuera.</h2>
+  </div>
+
+  <div class="fila" style="margin-top:52px;align-items:flex-start">
+    <div class="col">
+      <div class="term">
+        <div class="cmd">$ cargo stylus check --endpoint https://sepolia-rollup.arbitrum.io/rpc</div>
+        <div class="inf">INFO [stylus_tools::core::build] Building project with Cargo.toml version: 0.1.0</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;Finished `release` profile [optimized] target(s) in 4.05s</div>
+        <div>project metadata hash: "e654040c17700129aa006fa7e0a04350b25bc6bd…"</div>
+        <div class="ok">INFO [stylus_tools::core::check] contract size: 12.2 KB (12190 bytes)</div>
+      </div>
+    </div>
+    <div class="col" style="max-width:430px">
+      <div class="rotulo acento">Tamaño del contrato</div>
+      <div class="cifra chica" style="color:var(--seal);margin-top:12px">12,2<span class="u">KB</span></div>
+      <ul style="margin-top:28px;font-size:17px">
+        <li>Rust compilado a WebAssembly, sobre Scaffold-Stylus</li>
+        <li>Aritmética entera en puntos básicos, sin coma flotante</li>
+        <li>13 pruebas del motor, verdes, sobre el mismo código que se despliega</li>
+        <li>Sin reloj y sin aleatoriedad: dos ejecuciones dan el mismo entero</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Salida literal de <span class="mono">cargo stylus check</span> · contrato desplegado en
+    Arbitrum Sepolia, red de pruebas · la evidencia sí se lee de Arbitrum One, la red real
+  </div>
+</section>
+
+<!-- ============================================ 08 · qué está construido -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">08 · QUÉ ESTÁ CONSTRUIDO Y CÓMO COMPROBARLO</div>
+
+  <div style="margin-top:56px">
+    <div class="rotulo acento">Nada de esto es una maqueta</div>
+    <h2 style="margin-top:18px;max-width:24ch">Contrato desplegado, demo pública, y una transacción que cualquiera puede abrir.</h2>
+  </div>
+
+  <div style="margin-top:44px">
+    <table>
+      <thead><tr><th>Pieza</th><th>Dónde vive</th><th style="text-align:right">Cómo se comprueba</th></tr></thead>
+      <tbody>
+        <tr><td>Contrato del fallo</td><td class="mono">0xC6af1f2893F9b3D4547fF31ee1e9181597E2850A</td><td class="n">Arbiscan · Arbitrum Sepolia</td></tr>
+        <tr><td>Cómputo reproducible</td><td class="mono">previewVerdict(uint32 ×7)</td><td class="n">llamada pura, sin gas</td></tr>
+        <tr><td>Fallo asentado</td><td class="mono">0x076b29b1…cc7757</td><td class="n">bloque 295922360 · éxito</td></tr>
+        <tr><td>Evidencia</td><td class="mono">pool de Aave V3 en Arbitrum One</td><td class="n">Etherscan v2 · chainid 42161</td></tr>
+        <tr><td>Demo</td><td class="mono">remand.107-172-6-206.sslip.io</td><td class="n">servidor propio, sin Vercel</td></tr>
+        <tr><td>Código</td><td class="mono">github.com/kasbsquall/remand</td><td class="n">primer commit dentro de la ventana</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="fuente">
+    La transacción del fallo se firmó desde una wallet real durante la grabación del video ·
+    95.806 de gas · comisión 0,0000019 ETH
+  </div>
+</section>
+
+<!-- ============================================ 09 · alcance -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">09 · HASTA DÓNDE LLEGA HOY</div>
+
+  <div style="margin-top:64px">
+    <div class="rotulo">A quién sirve y a quién todavía no</div>
+    <h2 style="margin-top:20px;max-width:26ch">Hoy libera capital inmovilizado. Llegar a quien nunca pudo depositar es el siguiente trabajo.</h2>
+  </div>
+
+  <div class="fila" style="margin-top:54px;gap:44px">
+    <div class="col caja">
+      <div class="rotulo acento">Lo que hace hoy</div>
+      <ul style="font-size:17px;margin-top:8px">
+        <li>Lee el pool de Aave V3 en Arbitrum One</li>
+        <li>Sirve a quien ya operó y tiene historial</li>
+        <li>Le devuelve el capital que sobraba en garantía</li>
+        <li>Deja el fallo escrito y releíble por terceros</li>
+      </ul>
+    </div>
+    <div class="col caja">
+      <div class="rotulo acento">Lo que todavía no</div>
+      <ul style="font-size:17px;margin-top:8px">
+        <li>El mecanismo exige historial previo, así que no alcanza a quien nunca pudo depositar</li>
+        <li>Una sola fuente de evidencia: un pool, un protocolo</li>
+        <li>Los pesos son fijos y públicos, no gobernados</li>
+      </ul>
+    </div>
+    <div class="col caja" style="border-color:var(--seal);background:rgba(215,155,94,.05)">
+      <div class="rotulo acento">El siguiente paso</div>
+      <ul style="font-size:17px;margin-top:8px">
+        <li>Señales que no pidan garantía previa</li>
+        <li>Más fuentes de evidencia por dimensión</li>
+        <li>Que un prestamista consuma el fallo como entrada de su propio riesgo</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Este bloque está publicado en el propio producto, no solo aquí: un pitch que solo promete
+    se cae en la ronda de preguntas
+  </div>
+</section>
+
+<!-- ============================================ 10 · cierre -->
+<section class="lam" style="justify-content:center;align-items:center;text-align:center">
+  <svg class="guil" style="width:1180px;height:1180px;left:210px;top:-140px" viewBox="0 0 1180 1180" fill="none" id="g2"></svg>
+  <svg width="112" height="112" viewBox="0 0 64 64" fill="none" style="margin-bottom:26px">
+    <path d="M14 10 V54" stroke="#eae5dc" stroke-width="6" stroke-linecap="square"/>
+    <path d="M14 10 H40 V32 H14" stroke="#eae5dc" stroke-width="6" stroke-linecap="square"/>
+    <path d="M30 32 L50 54" stroke="#eae5dc" stroke-width="6" stroke-linecap="square"/>
+    <path d="M47 12 H58" stroke="#eae5dc" stroke-width="6"/>
+    <path d="M47 24 H58" stroke="#eae5dc" stroke-width="6"/>
+  </svg>
+  <h1 style="font-size:74px;max-width:22ch">No tienes que confiar en Remand.</h1>
+  <h1 style="font-size:74px;color:var(--seal);margin-top:10px">Puedes comprobarlo.</h1>
+
+  <div class="fila" style="margin-top:60px;gap:70px;justify-content:center;flex:none">
+    <div>
+      <div class="rotulo">Demo</div>
+      <div class="mono" style="margin-top:10px;font-size:19px;color:var(--seal)">remand.107-172-6-206.sslip.io</div>
+    </div>
+    <div class="sep" style="align-self:center;height:52px"></div>
+    <div>
+      <div class="rotulo">Código</div>
+      <div class="mono" style="margin-top:10px;font-size:19px">github.com/kasbsquall/remand</div>
+    </div>
+    <div class="sep" style="align-self:center;height:52px"></div>
+    <div>
+      <div class="rotulo">Contrato</div>
+      <div class="mono" style="margin-top:10px;font-size:19px">0xC6af1f28…97E2850A</div>
+    </div>
+  </div>
+
+  <div class="mono" style="margin-top:52px;font-size:14px;color:var(--ink-faint);letter-spacing:.06em">
+    Kevin Soto Burgos · Hackathon Ethereum Lima 2026 · track Arbitrum
+  </div>
+</section>
+
+<script>
+// Guilloche: hipotrocoides encadenadas, la misma familia de curvas que se graba
+// en los billetes. La semilla sale del texto, así que la roseta es siempre la
+// misma para el mismo documento.
+function fnv(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rngOf(seed){let x=seed||1;return()=>{x^=x<<13;x>>>=0;x^=x>>17;x^=x<<5;x>>>=0;return x/4294967296}}
+function roseta(el,seed,size,anillos){
+  const r=rngOf(fnv(seed)),c=size/2,ns="http://www.w3.org/2000/svg";
+  for(let k=0;k<anillos;k++){
+    const R=size*(0.19+0.052*k),ratio=9+Math.floor(r()*11),d=R/ratio,l=0.72+r()*0.5;
+    let p="";
+    for(let i=0;i<=560;i++){
+      const t=(i/560)*Math.PI*2*ratio;
+      const x=c+(R-d)*Math.cos(t)+l*d*Math.cos(((R-d)/d)*t);
+      const y=c+(R-d)*Math.sin(t)-l*d*Math.sin(((R-d)/d)*t);
+      p+=(i?"L":"M")+x.toFixed(2)+" "+y.toFixed(2);
+    }
+    const path=document.createElementNS(ns,"path");
+    path.setAttribute("d",p);path.setAttribute("fill","none");
+    path.setAttribute("stroke","#d79b5e");path.setAttribute("stroke-width","0.7");
+    path.setAttribute("opacity",(0.3+k*0.1).toFixed(2));
+    el.appendChild(path);
+  }
+}
+roseta(document.getElementById("g1"),"remand-deck-portada",1180,8);
+roseta(document.getElementById("g2"),"remand-cierre",1180,8);
+</script>
+</body>
+</html>
