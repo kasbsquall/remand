@@ -57,7 +57,10 @@ export function RegisterRuling({ appellant, caseId, evidence, alreadyJudged }: P
     if (isSuccess) setAsentado(true);
   }, [isSuccess]);
 
-  const esLaWalletCorrecta = address?.toLowerCase() === appellant.toLowerCase();
+  // Quien firma queda registrado como presentante. Que además sea el titular
+  // de la wallet analizada se señala, porque no es lo mismo defenderse uno
+  // mismo que hacerlo por cuenta ajena, pero no es requisito para asentar.
+  const firmaElTitular = address?.toLowerCase() === appellant.toLowerCase();
   const esLaRedCorrecta = chainId === arbitrumSepolia.id;
 
   const asentar = () => {
@@ -148,6 +151,15 @@ export function RegisterRuling({ appellant, caseId, evidence, alreadyJudged }: P
               </dd>
             </div>
             <div>
+              <dt className="remand-label">Titular del expediente</dt>
+              <dd
+                className="remand-num mt-[var(--ma-hair)]"
+                style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)" }}
+              >
+                {appellant.slice(0, 10)}…{appellant.slice(-6)}
+              </dd>
+            </div>
+            <div>
               <dt className="remand-label">Red</dt>
               <dd className="remand-num mt-[var(--ma-hair)]" style={{ fontSize: "var(--t-small)" }}>
                 Arbitrum Sepolia · red de pruebas
@@ -174,21 +186,7 @@ export function RegisterRuling({ appellant, caseId, evidence, alreadyJudged }: P
               </>
             )}
 
-            {isConnected && !esLaWalletCorrecta && (
-              <>
-                <button type="button" className="remand-action" disabled>
-                  Asentar el fallo
-                </button>
-                <div className="mt-[var(--ma-close)]">
-                  <Aviso tone="seal">
-                    Este expediente pertenece a {appellant.slice(0, 8)}…{appellant.slice(-6)}. Sólo esa wallet puede
-                    asentar su propio fallo, porque el contrato registra a quien firma como apelante.
-                  </Aviso>
-                </div>
-              </>
-            )}
-
-            {isConnected && esLaWalletCorrecta && !esLaRedCorrecta && (
+            {isConnected && !esLaRedCorrecta && (
               <button
                 type="button"
                 className="remand-action"
@@ -198,11 +196,18 @@ export function RegisterRuling({ appellant, caseId, evidence, alreadyJudged }: P
               </button>
             )}
 
-            {isConnected && esLaWalletCorrecta && esLaRedCorrecta && (
+            {isConnected && esLaRedCorrecta && (
               <>
                 <button type="button" className="remand-action" onClick={asentar} disabled={isPending || isMining}>
                   {isPending ? "Confirma en tu wallet…" : isMining ? "Asentando en la cadena…" : "Asentar el fallo"}
                 </button>
+                <div className="mt-[var(--ma-close)]">
+                  <Aviso>
+                    {firmaElTitular
+                      ? "Firmas tu propio expediente: el contrato te registrará como presentante y como titular."
+                      : `Firmas como presentante. El expediente sigue siendo de ${appellant.slice(0, 8)}…${appellant.slice(-6)}, y el contrato registrará tu dirección como quien lo asentó.`}
+                  </Aviso>
+                </div>
                 {txHash && isMining && (
                   <div className="mt-[var(--ma-close)]">
                     <Aviso>Transacción enviada. Arbitrum suele confirmar en pocos segundos.</Aviso>
