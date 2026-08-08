@@ -18,6 +18,44 @@ dentro de un contrato en Arbitrum. Verificable por cualquiera.
 
 ---
 
+## Entregables
+
+| Pieza | Dónde |
+|---|---|
+| Demo en producción | [remand.107-172-6-206.sslip.io](https://remand.107-172-6-206.sslip.io) |
+| Contrato del fallo | [`0xC6af1f28…97E2850A`](https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a) en Arbitrum Sepolia |
+| Fallo asentado | [`0x076b29b1…cc7757`](https://sepolia.arbiscan.io/tx/0x076b29b19e3d18eee39c44a7d0e93490cfe0255333634016328a7a985ecc7757), bloque 295922360 |
+| Video pitch | `docs/video/` · 2:37 |
+| Pitch deck | [`docs/deck/remand-pitch-deck.pdf`](docs/deck/remand-pitch-deck.pdf) |
+| Arquitectura | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |
+
+## Comprobarlo sin fiarte de nada de esto
+
+El argumento entero del proyecto es que el cálculo se puede repetir sin pedirnos
+permiso. Aquí está cómo, con una sola orden y sin wallet:
+
+```bash
+cast call 0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a \
+  "previewVerdict(uint32,uint32,uint32,uint32,uint32,uint32,uint32)(uint32,uint32,uint32,uint32,uint32,uint32,bool,uint32)" \
+  900 3 30 3 3 2 5 --rpc-url https://sepolia-rollup.arbitrum.io/rpc
+```
+
+Devuelve `10000 · 1000 · 10000 · 3334 · 6250 · 6375 · true · 8175`. El `6375` es
+el 63,75% del acta y el `8175` el colateral del 81,75%.
+
+Baja los repagos de `3` a `1` en esa misma orden y el total cae a `4375`, el
+fallo pasa a `false` y el colateral sube a `9375`. Un valor guardado no
+reacciona a un input nuevo; este sí, y eso es lo que demuestra que hay
+aritmética dentro del contrato y no una promesa.
+
+Para comprobar de una vez todas las cifras que aparecen en el video y en el
+deck:
+
+```bash
+python3 scripts/verificar-cifras.py
+```
+
+
 ## El problema
 
 El préstamo descentralizado exige sobrecolateralizar: para pedir prestado hay
