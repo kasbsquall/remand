@@ -22,8 +22,8 @@ dentro de un contrato en Arbitrum. Verificable por cualquiera.
 
 El préstamo descentralizado exige sobrecolateralizar: para pedir prestado hay
 que depositar más valor del que recibes, habitualmente un 120% o más. Eso
-protege al protocolo y excluye a quien no tiene capital acumulado, que en Perú y
-en América Latina es la mayoría.
+protege al protocolo y deja capital inmovilizado incluso a quien lleva años
+devolviendo cada préstamo que pidió.
 
 Ya existen protocolos que evalúan riesgo para prestar sin colateral completo.
 Spectral Finance, Cred Protocol, Credora y RociFi del lado del scoring; Maple,
@@ -35,6 +35,22 @@ cálculo, no sabe qué dimensión lo hundió y no tiene ante quién impugnar.
 En la banca tradicional, impugnar una decisión automatizada es un derecho
 reconocido. En finanzas descentralizadas nunca se construyó. Te niegan y se
 acabó.
+
+### A quién sirve hoy, y a quién no
+
+Conviene decirlo antes de que alguien lo deduzca. El puntaje se construye con
+historial de préstamos en Aave V3, y para pedir en Aave hay que depositar 120%
+primero. **Eso significa que Remand hoy sirve a quien ya pudo sobrecolateralizar
+y le libera capital inmovilizado, no a quien nunca tuvo capital.**
+
+Es eficiencia de capital para usuarios con historial probado, no acceso al
+crédito para el desbancarizado. Llegar hasta ahí exige ponderar señales que no
+requieran garantía previa: ingresos recurrentes verificables, historial en
+protocolos sin colateral, atestaciones de terceros. Ese es el siguiente trabajo
+del motor y no está hecho.
+
+Lo que sí está resuelto es el mecanismo: que una decisión crediticia
+automatizada pueda ser reproducida por cualquiera que la cuestione.
 
 ## Qué hace Remand
 

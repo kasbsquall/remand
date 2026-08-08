@@ -177,6 +177,20 @@ export function EvidenceLimits() {
                 perjudica a quien opera fuera del protocolo más grande.
               </p>
             </li>
+            <li className="remand-row" style={{ gridTemplateColumns: "auto 1fr", alignItems: "start" }}>
+              <Warning
+                size={16}
+                weight="light"
+                aria-hidden="true"
+                className="remand-glyph-inline"
+                style={{ color: "var(--seal)" }}
+              />
+              <p style={{ fontSize: "var(--t-small)", lineHeight: 1.55, color: "var(--ink-soft)" }}>
+                Pedir prestado en Aave exige depositar más de lo que se recibe, así que este expediente sólo existe para
+                quien ya pudo hacerlo. Remand le libera capital inmovilizado. No alcanza todavía a quien nunca tuvo
+                capital que depositar.
+              </p>
+            </li>
           </ul>
 
           <p
