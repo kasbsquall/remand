@@ -169,6 +169,103 @@ un rechazo, que es exactamente el problema que Remand denuncia.
 Si el modelo no está disponible, el sistema arma el expediente con un análisis
 determinista sobre los mismos números y lo declara en pantalla.
 
+## Consumir el fallo desde otro protocolo
+
+Remand no presta dinero. Calcula un fallo y lo deja escrito, y para que eso sirva
+de algo alguien tiene que usarlo. Esta es la vía, y son cuatro lecturas que no
+cuestan gas ni exigen firma.
+
+**Antes de que exista un expediente**, para decidir con qué colateral aceptarías a
+una wallet, se llama a la función pura con los siete campos de evidencia. No toca
+almacenamiento, así que se puede llamar en cada solicitud sin coste:
+
+```solidity
+interface IRemandVerdict {
+    function previewVerdict(
+        uint32 walletAgeDays,
+        uint32 activeMonths,
+        uint32 totalMonths,
+        uint32 repayments,
+        uint32 borrows,
+        uint32 liquidations,
+        uint32 distinctProtocols
+    ) external pure returns (
+        uint32 repayment,
+        uint32 consistency,
+        uint32 age,
+        uint32 liquidation,
+        uint32 diversity,
+        uint32 total,
+        bool granted,
+        uint32 collateralBps
+    );
+
+    function getRuling(uint256 caseId) external view returns (
+        address appellant,
+        uint32 repayment,
+        uint32 consistency,
+        uint32 age,
+        uint32 liquidation,
+        uint32 diversity,
+        uint32 total,
+        bool granted,
+        uint32 collateralBps
+    );
+
+    function isJudged(uint256 caseId) external view returns (bool);
+
+    /// Cinco ponderaciones y el umbral de aprobación, todo en puntos básicos.
+    function weights() external pure returns (
+        uint32 wRepayment,
+        uint32 wConsistency,
+        uint32 wAge,
+        uint32 wLiquidation,
+        uint32 wDiversity,
+        uint32 approvalThreshold
+    );
+}
+```
+
+**Cuando ya hay un expediente asentado**, se lee su fallo y se usa el colateral
+que devuelve. Lo que importa aquí es que el prestamista no tiene que confiar en
+nosotros para nada: recibe el desglose completo y puede recalcularlo él mismo con
+la función pura y los mismos insumos.
+
+```solidity
+function colateralExigido(uint256 caseId, uint256 monto) external view returns (uint256) {
+    if (!remand.isJudged(caseId)) return (monto * 12_000) / 10_000;  // sin fallo, el 120% de siempre
+
+    (, , , , , , , bool concedida, uint32 colateralBps) = remand.getRuling(caseId);
+    if (!concedida) return (monto * 12_000) / 10_000;
+
+    // 8175 puntos basicos son el 81,75%. El suelo del motor es 6000.
+    return (monto * uint256(colateralBps)) / 10_000;
+}
+```
+
+Todo va en puntos básicos porque el motor no usa coma flotante en ninguna parte.
+`10_000` es el 100%, el umbral de aprobación está en `6000` y el colateral se
+mueve entre `12_000` y un suelo de `6000`.
+
+Las ponderaciones no hay que copiarlas de aquí: `weights()` las devuelve desde el
+propio contrato, así que un integrador puede comprobar que no cambiaron sin
+fiarse de esta documentación. Hoy devuelve `3000 · 2500 · 2000 · 1500 · 1000` para
+las cinco dimensiones y `6000` de umbral.
+
+Y desde una terminal, sin escribir un contrato:
+
+```bash
+cast call 0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a \
+  "weights()(uint32,uint32,uint32,uint32,uint32,uint32)" \
+  --rpc-url https://sepolia-rollup.arbitrum.io/rpc
+```
+
+Conviene decir el límite. Que la vía exista no significa que nadie la esté usando:
+hoy no hay ningún prestamista integrado, y conseguirlo es trabajo comercial, no
+técnico. Lo que esta sección resuelve es que el día que alguien quiera hacerlo no
+tenga que deducir la interfaz leyendo el contrato.
+
+
 ## Estructura
 
 ```
