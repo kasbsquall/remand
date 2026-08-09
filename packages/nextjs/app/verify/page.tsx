@@ -10,8 +10,9 @@
  */
 
 import { Suspense, useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowClockwise, CheckCircle, Terminal, Warning } from "@phosphor-icons/react";
+import { ArrowClockwise, ArrowUpRight, CheckCircle, Terminal, Warning } from "@phosphor-icons/react";
 import { Docket, docketNumber } from "~~/components/remand/Docket";
 import { VerdictLedger, type Weights } from "~~/components/remand/VerdictLedger";
 import {
@@ -345,6 +346,53 @@ function VerificadorInterno() {
           <Terminal size={16} weight="light" aria-hidden="true" className="remand-glyph-inline" />
           El comando se actualiza con las cifras del formulario.
         </p>
+      </section>
+
+      <section className="mt-[var(--ma-section)]" aria-labelledby="alcance-heading">
+        <h2 id="alcance-heading" className="remand-label">
+          Qué prueba esta página y qué no
+        </h2>
+        <p className="remand-prose mt-[var(--ma-close)]">
+          Conviene separarlo, porque son dos cosas distintas y sólo una ocurre aquí.
+        </p>
+
+        <div className="remand-sunk mt-[var(--ma-block)] p-[var(--ma-block)]">
+          <dl className="grid gap-[var(--ma-block)] md:grid-cols-2">
+            <div>
+              <dt className="remand-label" style={{ color: "var(--seal)" }}>
+                El cálculo, aquí
+              </dt>
+              <dd className="remand-prose mt-[var(--ma-close)]">
+                Los siete números que hay arriba se los pasas tú al contrato, y el contrato devuelve el fallo. Por eso
+                al cambiar una cifra el resultado se mueve: no hay un número guardado esperando, hay aritmética
+                ejecutándose. Eso es lo que esta página demuestra, y lo demuestra sin firma, sin gas y sin pasar por
+                nuestro servidor.
+              </dd>
+            </div>
+            <div>
+              <dt className="remand-label">La procedencia, en el expediente</dt>
+              <dd className="remand-prose mt-[var(--ma-close)]">
+                Lo que esta página no puede demostrar es de dónde salen esos siete números, porque aquí los escribes tú.
+                En el flujo real nadie los escribe: se leen del historial público de la wallet en Arbitrum One, y el
+                expediente declara hasta qué bloque se observó. Reconsulta esa misma fuente a ese mismo bloque y salen
+                los mismos siete números.
+              </dd>
+            </div>
+          </dl>
+
+          <hr className="remand-rule my-[var(--ma-block)]" />
+
+          <p style={{ fontSize: "var(--t-small)", color: "var(--ink-faint)" }}>
+            Dicho de otra forma: un expediente con cifras inventadas produciría un fallo correctamente calculado sobre
+            una mentira. Por eso el fallo que se asienta en la cadena viene siempre del recolector y nunca de este
+            formulario, y por eso el expediente lleva escrito su bloque de observación.
+          </p>
+
+          <Link href="/" className="remand-action mt-[var(--ma-block)] inline-flex items-center gap-[var(--ma-tight)]">
+            Ver de dónde salen estos siete números
+            <ArrowUpRight size={16} weight="light" aria-hidden="true" />
+          </Link>
+        </div>
       </section>
     </>
   );
