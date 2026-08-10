@@ -16,6 +16,7 @@ import { ArrowUpRight, CheckCircle, Gavel, Scales, SealCheck, ShieldChevron, War
 import { Docket, docketNumber } from "~~/components/remand/Docket";
 import { Guilloche } from "~~/components/remand/Guilloche";
 import { CaseFingerprint } from "~~/components/remand/CaseFingerprint";
+import { Procedencia } from "~~/components/remand/Procedencia";
 import { RegisterRuling } from "~~/components/remand/RegisterRuling";
 import { EvidenceLimits, Shortfall } from "~~/components/remand/ShortfallAndLimits";
 import { VerdictLedger, type Weights } from "~~/components/remand/VerdictLedger";
@@ -315,6 +316,9 @@ export default function Apelacion({ params }: { params: Promise<{ address: strin
             </div>
             <div className="mt-[var(--ma-close)]">
               <CaseFingerprint evidence={data.evidence} />
+            </div>
+            <div className="mt-[var(--ma-block)]">
+              <Procedencia apelante={address as `0x${string}`} evidencia={data.evidence} />
             </div>
           </section>
 
