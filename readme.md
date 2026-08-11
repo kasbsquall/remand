@@ -10,7 +10,7 @@ Si te niegan un préstamo, tu caso se reabre con evidencia y el fallo se recalcu
 dentro de un contrato en Arbitrum. Verificable por cualquiera.
 
 [Demo en vivo](https://remand.107-172-6-206.sslip.io) ·
-[Video](https://youtu.be/8-E8ES9ZZDQ) ·
+[Video](https://youtu.be/2P_1z1CP3T0) ·
 [Contrato en Arbiscan](https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a) ·
 [Arquitectura](docs/ARCHITECTURE.md) ·
 [Contratos](docs/CONTRACTS.md)
@@ -27,7 +27,7 @@ dentro de un contrato en Arbitrum. Verificable por cualquiera.
 | Contrato del fallo | [`0xC6af1f28…97E2850A`](https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a) en Arbitrum Sepolia |
 | Atestador de estado | [`0xce27abc2…9c396448`](https://sepolia.arbiscan.io/address/0xce27abc23d456b2dce24967b669624569c396448) en Arbitrum Sepolia |
 | Fallo asentado | [`0x076b29b1…cc7757`](https://sepolia.arbiscan.io/tx/0x076b29b19e3d18eee39c44a7d0e93490cfe0255333634016328a7a985ecc7757), bloque 295922360 |
-| Video pitch | [Ver en YouTube](https://youtu.be/8-E8ES9ZZDQ) · 2:37 |
+| Video pitch | [Ver en YouTube](https://youtu.be/2P_1z1CP3T0) · 2:57 |
 | Video demo | [Ver en YouTube](https://youtu.be/TWz0m-Wgoqw) · 2:15 · una sola toma, sin cortes |
 | Pitch deck | [`docs/deck/remand-pitch-deck.pdf`](docs/deck/remand-pitch-deck.pdf) |
 | Arquitectura | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) |

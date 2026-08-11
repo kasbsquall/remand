@@ -1,14 +1,17 @@
-# Remand · Video Pitch · versión 3
+# Remand · Video Pitch · versión 4
 
 Reescrito tras el jurado simulado. Cuatro evaluadores agnósticos: ingeniero senior,
-inversor, espectador no técnico y jurado del track Arbitrum.
+inversor, espectador no técnico y jurado del track Arbitrum. La versión 4 añade la escena
+del atestador, que no existía cuando se grabó la 3 porque el contrato todavía no estaba
+desplegado.
 
-**Runtime real del montaje: 2:37.7**, medido sobre `final_audio.wav`.
-**Runtime nominal del guion: 2:40.** Límite del reglamento: 3:00. El margen de veinte segundos es
-deliberado: la locución en español se estira y el corte se mide sobre el audio real, no
-sobre esta tabla.
+**Runtime real del montaje: 2:57.4**, medido sobre `final_audio_v4.wav`.
+**Límite del reglamento: 3:00.** Quedan 2,6 segundos. La versión 3 tenía veinte y ese margen
+era deliberado; ahora ya no hay colchón, así que cualquier escena que se quiera añadir
+tiene que quitar tiempo de otra. Si hiciera falta recuperar margen, el sitio barato es la
+cola de música del cierre, que son cinco segundos después de la última palabra.
 
-**Frase pegajosa**, tres apariciones: 0:08, 1:38, 2:32.
+**Frase pegajosa**, tres apariciones: 0:08, 1:38, 2:52.
 **"No tienes que confiar en Remand. Puedes comprobarlo."**
 
 ---
@@ -178,7 +181,7 @@ cabe entero en la cadena."
 
 ---
 
-### 8 · La prueba · 1:38 → 2:06 · 28 s
+### 8 · La prueba · 1:38 → 2:04 · 26 s
 
 La escena más larga del video, y la única razón por la que merece ganar.
 
@@ -198,7 +201,40 @@ que demuestra que hay aritmética adentro y no una promesa."
 
 ---
 
-### 9 · Se asienta · 2:06 → 2:18 · 12 s
+### 9 · De dónde salen los datos · 2:04 → 2:23 · 19 s
+
+Escena añadida después de la primera entrega, cuando el contrato atestador ya estaba
+desplegado y funcionando. Responde la pregunta que sigue a la escena anterior: el
+contrato prueba la aritmética, pero quién prueba los números que entran.
+
+**Imagen.** Grabación real del bloque de procedencia del expediente mientras el navegador
+hace las llamadas: tres al nodo público de Arbitrum One por la prueba de estado, y una al
+atestador en Sepolia que la verifica. A los 12,7 s de escena la cabecera pasa de *4 de 7*
+a *4 de 8* y aterriza la fila **Transacciones firmadas · 19 · PROBADO EN CADENA · prueba
+de 9 nodos contra el estado del bloque 493.303.460**. Eso ocurre delante de la cámara, no
+está animado.
+
+La cámara sube desde los campos declarados hasta esa fila, espera ahí la verificación, y
+después **se abre** hasta encuadrar los cuatro campos que siguen dependiendo de un tercero.
+
+**Sin golpe de cámara, y es deliberado.** La película permite tres y ya los gasta en Fallo,
+Prueba y Asiento. Prueba es la escena anterior: rematar igual dos veces seguidas desactiva
+los dos remates. Insertar esta escena en medio separa esos dos golpes, así que el montaje
+mejora por donde parecía que iba a complicarse. El acento aquí es la apertura de cámara,
+un movimiento que no se repite en ninguna otra escena: las once cierran sobre el dato,
+esta se retira para enseñar el límite.
+
+**Locución.** "Queda la pregunta difícil: ¿quién prueba los datos que entran? Un segundo
+contrato le pide a Arbitrum el hash de un bloque real, verifica la prueba de Merkle nodo
+por nodo, y lee cuántas transacciones firmó una wallet ajena. Sin oráculo, y sin que nadie
+tenga que decirnos la verdad."
+
+**Rótulo que permanece.** *1 de 8 probado en cadena · 4 declarados por terceros*, en cuadro
+desde antes de que aterrice la fila. El dato bueno y su límite entran juntos.
+
+---
+
+### 10 · Se asienta · 2:23 → 2:36 · 12 s
 
 **Imagen.** Grabación real: wallet conectándose, botón de asentar, MetaMask abriéndose, firma,
 y el hash apareciendo confirmado en Arbiscan. Sin cortes.
@@ -208,7 +244,7 @@ A partir de ahí ya no depende de nosotros ni de que esta página exista."
 
 ---
 
-### 10 · Hasta dónde llega · 2:18 → 2:28 · 10 s
+### 11 · Hasta dónde llega · 2:36 → 2:48 · 12 s
 
 **Imagen.** El bloque de alcance de la evidencia, tal como está en el producto.
 
@@ -218,7 +254,7 @@ y ese es el siguiente trabajo del motor."
 
 ---
 
-### 11 · Cierre · 2:28 → 2:40 · 12 s
+### 12 · Cierre · 2:48 → 2:57 · 9 s
 
 **Imagen.** La roseta guilloche dibujándose. Logotipo apilado. URL en grande y QR al costado,
 sostenidos los últimos cinco segundos.

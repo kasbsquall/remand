@@ -16,7 +16,7 @@ Bounty: Advanced (Scaffold-Stylus + AI)
 | Contrato en Arbiscan | https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a |
 | Atestador de estado | https://sepolia.arbiscan.io/address/0xce27abc23d456b2dce24967b669624569c396448 |
 | Fallo asentado (transacción) | https://sepolia.arbiscan.io/tx/0x076b29b19e3d18eee39c44a7d0e93490cfe0255333634016328a7a985ecc7757 |
-| Video pitch | https://youtu.be/8-E8ES9ZZDQ |
+| Video pitch | https://youtu.be/2P_1z1CP3T0 |
 | Video demo | https://youtu.be/TWz0m-Wgoqw |
 | Arquitectura | [docs/ARCHITECTURE.md](ARCHITECTURE.md) |
 | Contratos | [docs/CONTRACTS.md](CONTRACTS.md) |
@@ -26,7 +26,7 @@ Bounty: Advanced (Scaffold-Stylus + AI)
 
 | Pieza | Duración | Enlace | Formato |
 |---|---|---|---|
-| Video pitch | 2:37 | https://youtu.be/8-E8ES9ZZDQ | 1920×1080 · 30 fps · −15,2 LUFS |
+| Video pitch | 2:57 | https://youtu.be/2P_1z1CP3T0 | 1920×1080 · 30 fps · −15,2 LUFS |
 | Video demo | 2:15 | https://youtu.be/TWz0m-Wgoqw | 1920×1080 · 30 fps · sin locución, una sola toma |
 
 Los dos salen en `yuv420p` con `color_range=tv` y bt709. Sin esa conversión
