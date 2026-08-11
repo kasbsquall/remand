@@ -84,7 +84,16 @@ Van también en el producto y en el vídeo, no sólo aquí.
   pudo depositar, y eso está declarado en el producto, en el deck y en el vídeo.
 - **El anclaje sin confianza alcanza 256 bloques**, unos 64 segundos en Arbitrum
   One, así que cubre el estado reciente y no el historial de hace meses. Cuatro de
-  los siete campos del expediente siguen siendo declarados, y la interfaz lo dice.
+  los ocho campos del expediente siguen siendo declarados, y la interfaz lo dice.
+- **El atestador verifica la prueba, y hoy no ancla la raíz contra la que la
+  verifica.** `arbBlockHash` devuelve hashes de la cadena donde vive el contrato,
+  y el atestador está en Sepolia mientras la evidencia sale de Arbitrum One. Por
+  eso la demo llama a `previewAccount`, que recibe la raíz de estado como
+  parámetro: el recorrido del trie es completo y una prueba manipulada revierte,
+  pero de la raíz hay que fiarse de quien la entrega. El bucle entero sin
+  confianza, con `anchor` comprobando la cabecera contra la propia cadena, queda
+  demostrado sobre Sepolia. Cerrarlo en la red real es desplegar el mismo binario
+  en Arbitrum One, sin cambiar una línea.
 - **El conteo de préstamos y repagos puede venir truncado** por los límites de
   la fuente. Cuando pasa, la interfaz lo marca como piso y no como valor exacto.
 

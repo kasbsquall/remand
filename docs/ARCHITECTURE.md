@@ -91,14 +91,17 @@ flowchart LR
     RLP["cabecera RLP cruda"] --> CMP
     CMP -->|"no"| ERR["revierte"]
     CMP -->|"sí"| ROOT["raíz de estado"]
+    EXT["raíz entregada por quien llama · NO anclada"] -.->|"previewAccount"| ROOT
     ROOT --> MPT["camino Merkle-Patricia · keccak en cada salto"]
     PRB["prueba de 9 nodos"] --> MPT
     MPT --> CTA["cuenta: nonce, saldo, raíz de almacenamiento"]
 
     classDef chain fill:#1d3a2a,stroke:#4a7c59,color:#e8f0ea
     classDef bad fill:#3a1d1d,stroke:#7c4a4a,color:#f0e8e8
+    classDef warn fill:#3a3320,stroke:#7c6e4a,color:#f0ebe0
     class ARB,ROOT,MPT,CTA chain
     class ERR bad
+    class EXT warn
 ```
 
 El punto de anclaje es `arbBlockHash` del precompilado ArbSys. Importa la
@@ -107,6 +110,35 @@ pseudoaleatorio que no sirve como prueba. `arbBlockHash` devuelve el hash real
 de los últimos 256 bloques. Con él, un contrato puede comprobar por su cuenta
 que una cabecera es auténtica, sacar la raíz de estado, y caminar una prueba de
 Merkle-Patricia verificando el keccak de cada nodo hasta llegar a la cuenta.
+
+### Las dos entradas, y cuál usa la demo hoy
+
+La flecha punteada del diagrama es la parte que conviene mirar de frente, porque
+es donde la afirmación se sostiene sobre menos de lo que parece.
+
+`arbBlockHash` devuelve hashes **de la cadena donde vive el contrato**. El
+atestador está desplegado en Arbitrum Sepolia, así que sólo puede anclar bloques
+de Sepolia. La evidencia del expediente, en cambio, sale de Aave V3 en Arbitrum
+One. Un contrato en Sepolia no tiene forma de comprobar por su cuenta que una
+cabecera de Arbitrum One sea auténtica.
+
+De ahí que el contrato exponga dos entradas distintas:
+
+| Función | Origen de la raíz | Confianza que exige |
+|---|---|---|
+| `anchor` + `verifyAccount` | la comprueba contra `arbBlockHash` | ninguna, dentro de su cadena |
+| `previewAccount` | la recibe como parámetro | hay que fiarse de quien la entrega |
+
+**La demo usa `previewAccount` contra Arbitrum One.** La verificación de la
+prueba de Merkle es completa y real, con su keccak comprobado en cada salto, así
+que una prueba manipulada revierte. Lo que no está anclado es la raíz misma: si
+quien llama mintiera sobre ella, la prueba cuadraría contra una raíz falsa.
+
+Dicho de otro modo, hoy el atestador demuestra que **un nonce dado pertenece a un
+estado dado**, y el bucle completo sin confianza queda demostrado sobre Sepolia,
+que es donde el contrato puede anclar. Cerrar el hueco no exige rediseñar nada:
+es desplegar el mismo binario en Arbitrum One, donde `anchor` pasaría a anclar
+bloques de Arbitrum One y las dos mitades se juntarían.
 
 Así lee el **nonce de una cuenta ajena**, que es el número de transacciones que
 esa wallet ha firmado. Ningún opcode del EVM lee el nonce de otra cuenta.
