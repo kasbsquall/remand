@@ -32,6 +32,7 @@ flowchart TB
 
     subgraph arb["Arbitrum"]
         SEP["RemandVerdict · Rust → WASM · Stylus · Arbitrum Sepolia"]
+        ATT["RemandAttest · Stylus · verifica pruebas de estado"]
         ONE["Arbitrum One · historial real · pool de Aave V3"]
     end
 
@@ -47,20 +48,89 @@ flowchart TB
 
     VER ==>|"consulta directa, sin pasar por el servidor"| SEP
 
+    UI ==>|"eth_getProof · prueba de estado"| ONE
+    UI ==>|"previewAccount · comprueba la prueba"| ATT
+
     classDef chain fill:#1d3a2a,stroke:#4a7c59,color:#e8f0ea
     classDef server fill:#2a2620,stroke:#6b5f4d,color:#f0ebe4
     classDef client fill:#20262e,stroke:#4d5f6b,color:#e4ebf0
     classDef external fill:#2e2420,stroke:#6b524d,color:#f0e7e4
-    class SEP,ONE chain
+    class SEP,ATT,ONE chain
     class API,COL,AG server
     class UI,VER client
     class IDX,LLM external
 ```
 
-La flecha gruesa es la tesis del proyecto. El verificador público habla con
+Las flechas gruesas son la tesis del proyecto. El verificador público habla con
 Arbitrum **directamente desde el navegador del visitante**, sin pasar por
 nuestro servidor. Si la verificación dependiera de nosotros, no sería
 verificación.
+
+Las otras dos salen del mismo sitio y cierran el circuito por el otro extremo:
+el navegador pide la prueba de estado a un nodo público de Arbitrum One y se la
+entrega al atestador, que la comprueba dentro de la cadena. Ni el servidor ni la
+interfaz tocan ese camino.
+
+---
+
+## El atestador de estado
+
+`RemandAttest`, en `0xce27abc23d456b2dce24967b669624569c396448`, existe para
+responder la pregunta que sigue a la anterior. El contrato del fallo prueba la
+aritmética: es una función pura y cualquiera la reproduce. Pero eso no dice nada
+sobre los números que entran, y un motor honesto con datos inventados sigue
+dando un resultado inventado.
+
+La salida barata sería un oráculo firmado, o sea pedir que se confíe en quien
+firma. Este contrato no firma nada.
+
+```mermaid
+flowchart LR
+    NUM["número de bloque"] --> ARB["ArbSys · precompilado 0x64<br/>arbBlockHash"]
+    ARB -->|"hash real del bloque"| CMP{"¿keccak de la<br/>cabecera cuadra?"}
+    RLP["cabecera RLP cruda"] --> CMP
+    CMP -->|"no"| ERR["revierte"]
+    CMP -->|"sí"| ROOT["raíz de estado"]
+    ROOT --> MPT["camino Merkle-Patricia<br/>keccak comprobado en cada salto"]
+    PRB["prueba de 9 nodos"] --> MPT
+    MPT --> CTA["cuenta: nonce, saldo,<br/>raíz de almacenamiento"]
+
+    classDef chain fill:#1d3a2a,stroke:#4a7c59,color:#e8f0ea
+    classDef bad fill:#3a1d1d,stroke:#7c4a4a,color:#f0e8e8
+    class ARB,ROOT,MPT,CTA chain
+    class ERR bad
+```
+
+El punto de anclaje es `arbBlockHash` del precompilado ArbSys. Importa la
+distinción: el opcode `BLOCKHASH` del EVM, dentro de Nitro, devuelve un
+pseudoaleatorio que no sirve como prueba. `arbBlockHash` devuelve el hash real
+de los últimos 256 bloques. Con él, un contrato puede comprobar por su cuenta
+que una cabecera es auténtica, sacar la raíz de estado, y caminar una prueba de
+Merkle-Patricia verificando el keccak de cada nodo hasta llegar a la cuenta.
+
+Así lee el **nonce de una cuenta ajena**, que es el número de transacciones que
+esa wallet ha firmado. Ningún opcode del EVM lee el nonce de otra cuenta.
+
+La llamada es de lectura pura: sin gas y sin firma. El expediente la usa para
+partir sus ocho campos de evidencia en tres clases y para comprobar una cota que
+la cadena puede desmentir: **una wallet no puede haber hecho más operaciones que
+transacciones ha firmado.**
+
+| Clase | Campos | De dónde sale |
+|---|---|---|
+| Probado en cadena | 1 | prueba de estado verificada por el contrato |
+| Recalculable | 3 | bisección sobre el contador de transacciones |
+| Declarado | 4 | conteo de eventos desde un índice de terceros |
+
+Cuatro de ocho siguen dependiendo de un tercero, y el producto lo dice en su
+propia pantalla. El anclaje sin confianza alcanza 256 bloques, unos 64 segundos,
+así que cubre el estado reciente y no el historial: por eso la antigüedad es
+recalculable y no probada.
+
+Detalles de implementación en [CONTRACTS.md](CONTRACTS.md). El lector de RLP y
+el caminante de trie están escritos a mano, sin dependencias, y rechazan
+codificaciones no canónicas: aceptar ceros a la izquierda daría dos codificaciones
+válidas para la misma cabecera, o sea dos hashes para un mismo bloque.
 
 ---
 
@@ -221,12 +291,21 @@ contrato y sea auditable por cualquiera.
 Sin Stylus, Remand tendría que confiar en un servidor privado como todos los
 protocolos que critica.
 
-| Medida | Valor |
-|---|---|
-| Tamaño del contrato | 12,2 KB de WASM |
-| Fee de activación | 0,000092 ETH |
-| Gas de una apelación completa | 112.534 |
-| Costo de reproducir un fallo | cero, es una vista |
+El atestador es el argumento más fuerte de los dos, y es de otra clase. Ahí no
+se trata de que el cómputo salga más barato: verificar una prueba de
+Merkle-Patricia son nueve rondas de keccak sobre nodos de hasta 532 bytes, más
+un lector de RLP completo, y todo eso entra en 15,3 KB de los 24 que permite el
+formato. **La diferencia no es de coste, es que la función existe o no existe.**
+Ningún opcode del EVM lee el nonce de una cuenta ajena, así que sin verificar la
+prueba dentro de la cadena solo queda que alguien firme el dato y pedir que se
+le crea.
+
+| Medida | Contrato del fallo | Atestador |
+|---|---|---|
+| Tamaño del WASM | 12,2 KB | 15,3 KB de 24 |
+| Fee de activación | 0,000092 ETH | 0,0001 ETH |
+| Gas de una apelación completa | 112.534 | no aplica, es lectura |
+| Costo de reproducir el resultado | cero, es una vista | cero, es una vista |
 
 ---
 
