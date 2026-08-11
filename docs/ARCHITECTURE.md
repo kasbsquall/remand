@@ -86,14 +86,14 @@ firma. Este contrato no firma nada.
 
 ```mermaid
 flowchart LR
-    NUM["número de bloque"] --> ARB["ArbSys · precompilado 0x64<br/>arbBlockHash"]
-    ARB -->|"hash real del bloque"| CMP{"¿keccak de la<br/>cabecera cuadra?"}
+    NUM["número de bloque"] --> ARB["ArbSys 0x64 · arbBlockHash"]
+    ARB -->|"hash real del bloque"| CMP{"¿el keccak de la cabecera cuadra?"}
     RLP["cabecera RLP cruda"] --> CMP
     CMP -->|"no"| ERR["revierte"]
     CMP -->|"sí"| ROOT["raíz de estado"]
-    ROOT --> MPT["camino Merkle-Patricia<br/>keccak comprobado en cada salto"]
+    ROOT --> MPT["camino Merkle-Patricia · keccak en cada salto"]
     PRB["prueba de 9 nodos"] --> MPT
-    MPT --> CTA["cuenta: nonce, saldo,<br/>raíz de almacenamiento"]
+    MPT --> CTA["cuenta: nonce, saldo, raíz de almacenamiento"]
 
     classDef chain fill:#1d3a2a,stroke:#4a7c59,color:#e8f0ea
     classDef bad fill:#3a1d1d,stroke:#7c4a4a,color:#f0e8e8
