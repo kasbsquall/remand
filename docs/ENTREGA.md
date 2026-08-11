@@ -14,6 +14,7 @@ Bounty: Advanced (Scaffold-Stylus + AI)
 | Verificador público | https://remand.107-172-6-206.sslip.io/verify |
 | Registro de fallos | https://remand.107-172-6-206.sslip.io/registro |
 | Contrato en Arbiscan | https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a |
+| Atestador de estado | https://sepolia.arbiscan.io/address/0xce27abc23d456b2dce24967b669624569c396448 |
 | Fallo asentado (transacción) | https://sepolia.arbiscan.io/tx/0x076b29b19e3d18eee39c44a7d0e93490cfe0255333634016328a7a985ecc7757 |
 | Video pitch | https://youtu.be/8-E8ES9ZZDQ |
 | Video demo | https://youtu.be/TWz0m-Wgoqw |
@@ -53,6 +54,22 @@ Devuelve `10000 · 1000 · 10000 · 3334 · 6250 · 6375 · true · 8175`.
 
 ---
 
+## El atestador de estado
+
+Un segundo contrato, en `0xce27abc23d456b2dce24967b669624569c396448`, demuestra hechos de la cadena en vez de
+aceptarlos. Recibe la cabecera de un bloque, comprueba su keccak contra el
+precompilado ArbSys de la propia cadena, y verifica pruebas de Merkle-Patricia
+contra la raíz de estado que lleva dentro.
+
+Con eso lee el nonce de una cuenta ajena, que es algo que ningún opcode del EVM
+puede hacer. La llamada es de lectura pura: sin gas y sin firma.
+
+El expediente lo usa para separar sus siete campos en probados, recalculables y
+declarados, y para comprobar una cota que la cadena puede desmentir: una wallet
+no puede haber hecho más operaciones que transacciones ha firmado.
+
+Transacción de despliegue: 0x52c9616516a84323e9687b6134e93e419bd5b9da11f47021c09eaa1322323c6b
+
 ## Declaraciones de honestidad
 
 Van también en el producto y en el vídeo, no sólo aquí.
@@ -65,6 +82,9 @@ Van también en el producto y en el vídeo, no sólo aquí.
 - **El mecanismo exige historial previo.** Hoy Remand sirve a quien ya pudo
   sobrecolateralizar y le libera capital inmovilizado. No alcanza a quien nunca
   pudo depositar, y eso está declarado en el producto, en el deck y en el vídeo.
+- **El anclaje sin confianza alcanza 256 bloques**, unos 64 segundos en Arbitrum
+  One, así que cubre el estado reciente y no el historial de hace meses. Cuatro de
+  los siete campos del expediente siguen siendo declarados, y la interfaz lo dice.
 - **El conteo de préstamos y repagos puede venir truncado** por los límites de
   la fuente. Cuando pasa, la interfaz lo marca como piso y no como valor exacto.
 

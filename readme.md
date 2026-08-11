@@ -25,6 +25,7 @@ dentro de un contrato en Arbitrum. Verificable por cualquiera.
 |---|---|
 | Demo en producción | [remand.107-172-6-206.sslip.io](https://remand.107-172-6-206.sslip.io) |
 | Contrato del fallo | [`0xC6af1f28…97E2850A`](https://sepolia.arbiscan.io/address/0xc6af1f2893f9b3d4547ff31ee1e9181597e2850a) en Arbitrum Sepolia |
+| Atestador de estado | [`0xce27abc2…9c396448`](https://sepolia.arbiscan.io/address/0xce27abc23d456b2dce24967b669624569c396448) en Arbitrum Sepolia |
 | Fallo asentado | [`0x076b29b1…cc7757`](https://sepolia.arbiscan.io/tx/0x076b29b19e3d18eee39c44a7d0e93490cfe0255333634016328a7a985ecc7757), bloque 295922360 |
 | Video pitch | [Ver en YouTube](https://youtu.be/8-E8ES9ZZDQ) · 2:37 |
 | Video demo | [Ver en YouTube](https://youtu.be/TWz0m-Wgoqw) · 2:15 · una sola toma, sin cortes |
@@ -264,6 +265,70 @@ Conviene decir el límite. Que la vía exista no significa que nadie la esté us
 hoy no hay ningún prestamista integrado, y conseguirlo es trabajo comercial, no
 técnico. Lo que esta sección resuelve es que el día que alguien quiera hacerlo no
 tenga que deducir la interfaz leyendo el contrato.
+
+
+## De dónde sale cada número, y quién lo demuestra
+
+Que el fallo se calcule dentro del contrato demuestra la aritmética. No demuestra
+de dónde salen los siete números que entran, y esa es una objeción legítima: un
+expediente con datos inventados produciría un fallo correctamente calculado sobre
+una mentira.
+
+La salida no es un oráculo firmado. Es una propiedad de Arbitrum que casi nadie
+usa. El precompilado ArbSys, en `0x64`, expone `arbBlockHash`, que devuelve el
+hash **real** de un bloque L2 dentro de una ventana de 256. No hay que confundirlo
+con el opcode `BLOCKHASH` del EVM, que en Nitro devuelve un valor pseudoaleatorio
+y no sirve para anclar nada.
+
+Con eso, un segundo contrato recibe la cabecera cruda de un bloque, comprueba que
+su keccak coincide con el que dice la cadena, y extrae la raíz de estado. Esa raíz
+deja de ser una afirmación y pasa a ser un hecho. Contra ella verifica pruebas de
+Merkle-Patricia comprobando el hash en cada salto.
+
+Lo que habilita es una capacidad que Solidity no tiene: **ningún opcode del EVM
+devuelve el nonce de una cuenta ajena.** No es una optimización de coste, es la
+diferencia entre que la función exista o no.
+
+```bash
+# El contrato lee cuántas transacciones ha firmado una wallet. Sin gas, sin firma.
+cast call 0xce27abc23d456b2dce24967b669624569c396448 \
+  "previewAccount(bytes32,address,bytes[])(uint64,uint256,bytes32,bytes32)" \
+  <stateRoot> <wallet> <pruebaDelNodo> \
+  --rpc-url https://sepolia-rollup.arbitrum.io/rpc
+```
+
+Altera un byte de cualquier nodo de la prueba y revierte con `PruebaInvalida(1)`.
+Usa la prueba de una wallet para otra dirección y revierte igual, así que nadie
+puede copiar la prueba de un vecino con buen historial.
+
+### Los siete campos no son la misma clase de dato
+
+Presentarlos como si lo fueran sería cómodo y falso. El expediente los separa en
+tres, y sólo uno está probado:
+
+| clase | qué significa | campos |
+|---|---|---|
+| Probado en cadena | el contrato recorre la prueba y comprueba el hash en cada salto | transacciones firmadas |
+| Recalculable | sale de un nodo público sin clave de API; cualquiera con un nodo de archivo obtiene el mismo entero | antigüedad, meses con actividad, meses observados |
+| Declarado | conteo de eventos desde un índice de terceros | repagos, préstamos, liquidaciones, contratos distintos |
+
+Cuatro de los siete son declarados y la interfaz lo dice en su cabecera. Enseñar
+esa proporción es más fuerte que prometer cobertura total, porque es lo que
+cualquiera va a comprobar de todas formas.
+
+A eso se añade una cota que la cadena puede desmentir: una wallet no puede haber
+hecho más operaciones que transacciones ha firmado. Es tosca y por eso difícil de
+discutir. Si un expediente declarase doce repagos y la cadena demostrase cinco
+transacciones, se vería sin salir de la página.
+
+### Lo que todavía no cubre
+
+`arbBlockHash` alcanza 256 bloques, que en Arbitrum One son unos 64 segundos. El
+anclaje sin confianza llega al estado reciente, no al historial de hace meses. Y
+mientras el atestador viva en Arbitrum Sepolia, `anchor` ancla bloques de Sepolia;
+`previewAccount` sí verifica contra raíces de Arbitrum One porque las recibe como
+parámetro. Llevar el anclaje sin confianza a la red principal es desplegar el
+mismo binario allí, sin cambiar una línea.
 
 
 ## Estructura

@@ -81,6 +81,10 @@
   td{padding:13px 0;border-bottom:1px solid var(--rule);color:var(--ink-soft)}
   td.n{text-align:right;color:var(--ink);font-weight:500}
   tr.total td{border-bottom:none;padding-top:18px;color:var(--ink);font-size:19px}
+  /* Ocho filas a 13px de relleno desbordan la lámina y empujan el rótulo
+     contra la marca. Aquí el aire va entre bloques, no dentro de la fila. */
+  table.apretada td{padding:8px 0}
+  table.apretada tr.total td{padding-top:12px;font-size:17px}
   tr.total td.n{color:var(--seal);font-size:26px}
 
   .sello{display:inline-block;border:4px solid var(--seal);padding:8px 22px;
@@ -406,10 +410,73 @@
   </div>
 </section>
 
-<!-- ============================================ 08 · qué está construido -->
+<!-- ============================================ 08 · el atestador -->
 <section class="lam">
   <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
-  <div class="folio">08 · QUÉ ESTÁ CONSTRUIDO Y CÓMO COMPROBARLO</div>
+  <div class="folio">08 · DE DÓNDE SALEN LOS DATOS</div>
+
+  <div>
+    <div class="rotulo acento">La objeción que un jurado técnico encuentra solo</div>
+    <h2 style="margin-top:18px;max-width:30ch">El contrato prueba la aritmética. ¿Quién prueba los números que entran?</h2>
+  </div>
+
+  <div class="fila" style="margin-top:24px;gap:40px;align-items:flex-start">
+    <div class="col">
+      <p style="font-size:16.5px">
+        No lo resolvemos con un oráculo firmado. El precompilado ArbSys de Arbitrum
+        expone <span class="mono" style="color:var(--seal)">arbBlockHash</span>, que
+        devuelve el hash real de un bloque. Un segundo contrato recibe la cabecera
+        cruda, comprueba su keccak contra la cadena, y extrae la raíz de estado.
+        Contra ella verifica pruebas de Merkle-Patricia comprobando el hash en cada
+        salto.
+      </p>
+      <p style="margin-top:14px;font-size:16.5px">
+        Con eso lee el <strong>nonce de una cuenta ajena</strong>. Ningún opcode del
+        EVM puede hacerlo. No es una optimización de coste: es la diferencia entre
+        que la función exista o no.
+      </p>
+
+      <div class="term" style="margin-top:18px">
+        <div class="cmd">$ cast call &lt;atestador&gt; "previewAccount(bytes32,address,bytes[])" \</div>
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;&lt;stateRoot&gt; 0x39c7e5be… &lt;prueba de 9 nodos&gt;</div>
+        <div style="margin-top:10px"><span class="ok">19</span> &nbsp; transacciones firmadas, sin gas y sin firma</div>
+        <div style="margin-top:8px;color:var(--deny)">un byte alterado en la prueba → PruebaInvalida(1)</div>
+      </div>
+    </div>
+
+    <div class="col" style="max-width:520px">
+      <div class="rotulo" style="margin-bottom:14px">Los siete campos no son la misma clase de dato</div>
+      <table style="font-size:13.5px" class="apretada">
+        <thead><tr><th>Campo</th><th style="text-align:right">Procedencia</th></tr></thead>
+        <tbody>
+          <tr><td>Transacciones firmadas</td><td class="n" style="color:var(--seal)">probado en cadena</td></tr>
+          <tr><td>Antigüedad</td><td class="n" style="color:var(--ink2)">recalculable</td></tr>
+          <tr><td>Meses con actividad</td><td class="n" style="color:var(--ink2)">recalculable</td></tr>
+          <tr><td>Meses observados</td><td class="n" style="color:var(--ink2)">recalculable</td></tr>
+          <tr><td>Repagos</td><td class="n">declarado</td></tr>
+          <tr><td>Préstamos</td><td class="n">declarado</td></tr>
+          <tr><td>Liquidaciones</td><td class="n">declarado</td></tr>
+          <tr class="total"><td>Contratos distintos</td><td class="n" style="color:var(--ink-faint);font-size:19px">declarado</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:14px;font-size:15.5px">
+        Cuatro de ocho descansan sobre un índice de terceros, y el producto lo dice
+        en su cabecera. Enseñar esa proporción es más fuerte que prometer cobertura
+        total, porque es lo que cualquiera va a comprobar igualmente.
+      </p>
+    </div>
+  </div>
+
+  <div class="fuente">
+    Atestador desplegado en 0xce27abc2…9c396448 · el anclaje sin confianza cubre 256 bloques,
+    unos 64 segundos, así que alcanza el estado reciente y no el historial
+  </div>
+</section>
+
+<!-- ============================================ 09 · qué está construido -->
+<section class="lam">
+  <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
+  <div class="folio">09 · QUÉ ESTÁ CONSTRUIDO Y CÓMO COMPROBARLO</div>
 
   <div style="margin-top:56px">
     <div class="rotulo acento">Nada de esto es una maqueta</div>
@@ -438,10 +505,10 @@
   </div>
 </section>
 
-<!-- ============================================ 09 · alcance -->
+<!-- ============================================ 10 · alcance -->
 <section class="lam">
   <div class="marca"><svg viewBox="0 0 64 64" fill="none"><path d="M14 10 V54" stroke="#9a9387" stroke-width="7"/><path d="M14 10 H40 V32 H14" stroke="#9a9387" stroke-width="7"/><path d="M30 32 L50 54" stroke="#9a9387" stroke-width="7"/></svg><span>Remand</span></div>
-  <div class="folio">09 · HASTA DÓNDE LLEGA HOY</div>
+  <div class="folio">10 · HASTA DÓNDE LLEGA HOY</div>
 
   <div style="margin-top:64px">
     <div class="rotulo">A quién sirve y a quién todavía no</div>
@@ -482,7 +549,7 @@
   </div>
 </section>
 
-<!-- ============================================ 10 · cierre -->
+<!-- ============================================ 11 · cierre -->
 <section class="lam" style="justify-content:center;align-items:center;text-align:center">
   <svg class="guil" style="width:1180px;height:1180px;left:210px;top:-140px" viewBox="0 0 1180 1180" fill="none" id="g2"></svg>
   <svg width="112" height="112" viewBox="0 0 64 64" fill="none" style="margin-bottom:26px">
